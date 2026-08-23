@@ -5,6 +5,9 @@ require('dotenv').config();
 
 const app = express();
 
+// Render ya kisi bhi proxy ke liye https protocol sahi se detect karne ke liye
+app.set('trust proxy', 1);
+
 app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
@@ -312,7 +315,7 @@ app.post('/api/admin/approve-withdraw/:id', async (req, res) => {
         }
         wd.status = 'Approved';
         await wd.save();
-        res.json({ success: true, message: "Withdrawal request marked as Paid/Approved!" });
+        res.json({ success: false, message: "Withdrawal request marked as Paid/Approved!" });
     } catch (err) {
         res.json({ success: false, message: "Approval failed" });
     }

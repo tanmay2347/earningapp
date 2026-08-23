@@ -75,7 +75,8 @@
             const name = document.getElementById('nameInput').value;
             const referralCode = document.getElementById('referralInput').value;
 
-            let endpoint = isSignup ? 'http://localhost:5000/api/signup' : 'http://localhost:5000/api/login';
+            // Yahan se localhost hata kar sirf relative path (/api/...) kar diya hai
+            let endpoint = isSignup ? '/api/signup' : '/api/login';
             let payload = isSignup ? { name, phone, password, referralCode } : { username: phone, password: password, phone: phone };
 
             try {
