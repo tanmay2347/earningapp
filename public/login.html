@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login / Signup - EarningApp</title>
+    
+    <!-- WhatsApp / Social Media Preview Meta Tags -->
+    <meta property="og:title" content="EarningApp - Earn Real Cash Daily">
+    <meta property="og:description" content="Complete simple tasks and earn rewards. Refer your friends and get ₹50 bonus instantly!">
+    <meta property="og:image" content="https://earningapp-bhp9.onrender.com/banner.jpg">
+    <meta property="og:url" content="https://earningapp-bhp9.onrender.com/login.html">
+    <meta property="og:type" content="website">
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="center-body">
@@ -70,12 +78,11 @@
 
         document.getElementById('authForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const phone = document.getElementById('phoneInput').value;
+            const phone = document.getElementById('phoneInput'].value;
             const password = document.getElementById('passInput').value;
             const name = document.getElementById('nameInput').value;
             const referralCode = document.getElementById('referralInput').value;
 
-            // Yahan se localhost hata kar sirf relative path (/api/...) kar diya hai
             let endpoint = isSignup ? '/api/signup' : '/api/login';
             let payload = isSignup ? { name, phone, password, referralCode } : { username: phone, password: password, phone: phone };
 
