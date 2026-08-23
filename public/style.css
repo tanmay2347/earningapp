@@ -34,8 +34,6 @@ body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f9; color: #3
 .login-box button, .admin-form button { background: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 10px; }
 .admin-form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-
-/* Professional Toast Notification Style */
 #toastNotification {
     position: fixed;
     top: 20px;
@@ -52,16 +50,9 @@ body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f9; color: #3
     transform: translateY(-20px);
     pointer-events: none;
 }
-
 #toastNotification.show {
     opacity: 1;
     transform: translateY(0);
 }
-
-#toastNotification.success {
-    background: #28a745; /* Hara color success ke liye */
-}
-
-#toastNotification.error {
-    background: #dc3545; /* Laal color error ke liye */
-}
+#toastNotification.success { background: #28a745; }
+#toastNotification.error { background: #dc3545; }

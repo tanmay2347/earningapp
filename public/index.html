@@ -9,9 +9,36 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .close-modal { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 22px; font-weight: bold; color: #555; }
+        
+        /* Professional Toast Notification Style */
+        #toastNotification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+        #toastNotification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #toastNotification.success { background: #28a745; }
+        #toastNotification.error { background: #dc3545; }
     </style>
 </head>
 <body>
+
+    <!-- Toast Notification Div -->
+    <div id="toastNotification"></div>
 
     <header class="navbar">
         <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
@@ -145,6 +172,17 @@
             window.location.href = 'login.html';
         }
 
+        // Professional Toast Notification Function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            toast.innerText = message;
+            toast.className = '';
+            toast.classList.add('show', type);
+            setTimeout(() => {
+                toast.className = '';
+            }, 3000);
+        }
+
         async function fetchUserWallet() {
             if (!phone) return;
             try {
@@ -218,7 +256,7 @@
             const box = document.getElementById('refLinkBox');
             box.select();
             document.execCommand('copy');
-            alert("Referral link copied to clipboard!");
+            showToast("Referral link copied to clipboard!", "success");
         }
 
         function getShareText() {
@@ -258,9 +296,9 @@
                 textArea.select();
                 try {
                     document.execCommand('copy');
-                    alert("Promotional message & link copied to clipboard! You can now paste it anywhere.");
+                    showToast("Promotional message & link copied to clipboard!", "success");
                 } catch (err) {
-                    alert("Failed to copy text.");
+                    showToast("Failed to copy text.", "error");
                 }
                 document.body.removeChild(textArea);
             }
@@ -312,7 +350,7 @@
         async function submitWithdraw(type) {
             let amount, details;
             if (!phone) {
-                alert("Session expired! Please login again.");
+                showToast("Session expired! Please login again.", "error");
                 window.location.href = 'login.html';
                 return;
             }
@@ -321,7 +359,7 @@
                 const upiId = document.getElementById('upiId').value.trim();
                 amount = document.getElementById('upiAmount').value.trim();
                 if (!upiId || !amount) {
-                    alert("Please fill UPI ID and Amount!");
+                    showToast("Please fill UPI ID and Amount!", "error");
                     return;
                 }
                 details = `UPI ID: ${upiId}`;
@@ -331,7 +369,7 @@
                 const ifsc = document.getElementById('bankIfsc').value.trim();
                 amount = document.getElementById('bankAmount').value.trim();
                 if (!name || !acc || !ifsc || !amount) {
-                    alert("Please fill all Bank details and Amount!");
+                    showToast("Please fill all Bank details and Amount!", "error");
                     return;
                 }
                 details = `Bank | Name: ${name}, Acc: ${acc}, IFSC: ${ifsc}`;
@@ -344,7 +382,7 @@
                     body: JSON.stringify({ userPhone: phone, amount: Number(amount), accountDetails: details })
                 });
                 const data = await res.json();
-                alert(data.message);
+                showToast(data.message, data.success ? 'success' : 'error');
                 
                 if(data.success) {
                     document.getElementById('upiId').value = '';
@@ -358,7 +396,7 @@
                 }
             } catch (err) {
                 console.error("Withdrawal network error:", err);
-                alert("Server error during withdrawal!");
+                showToast("Server error during withdrawal!", "error");
             }
         }
 
@@ -400,7 +438,7 @@
 
         async function submitTask(title, amount) {
             if(!phone) {
-                alert("Please login as customer to claim rewards!");
+                showToast("Please login as customer to claim rewards!", "error");
                 return;
             }
             const res = await fetch('/api/submit-task', {
@@ -409,7 +447,7 @@
                 body: JSON.stringify({ userPhone: phone, taskTitle: title, rewardAmount: amount })
             });
             const data = await res.json();
-            alert(data.message);
+            showToast(data.message, data.success ? 'success' : 'error');
         }
 
         function searchTasks() {
