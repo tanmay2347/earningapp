@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earning App - Home</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .close-modal { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 22px; font-weight: bold; color: #555; }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
+        <div class="logo">EarningApp</div>
+        <div class="wallet-box" onclick="openWithdrawModal()" style="cursor: pointer; background: #ffc107; color: black; padding: 5px 12px; border-radius: 4px; font-weight: bold;">
+            Wallet: <span id="walletBalance">₹0</span> 💸 (Click to Withdraw)
+        </div>
+    </header>
+
+    <!-- Withdrawal Popup Modal -->
+    <div id="withdrawModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeWithdrawModal()">&times;</span>
+            <h3 style="margin-top: 0; color: #333;">Withdraw Funds</h3>
+            
+            <p style="background: #fff3cd; color: #856404; padding: 8px; border-radius: 4px; font-size: 12px; margin-bottom: 15px; border: 1px solid #ffeeba;">
+                ⚠️ <strong>Note:</strong> 5% commission will be deducted on withdrawal.
+            </p>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button type="button" id="upiTabBtn" onclick="switchMethod('upi')" style="flex:1; padding:8px; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">UPI ID</button>
+                <button type="button" id="bankTabBtn" onclick="switchMethod('bank')" style="flex:1; padding:8px; background:#e9ecef; color:black; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Bank Account</button>
+            </div>
+
+            <!-- UPI Form -->
+            <div id="upiForm">
+                <div style="margin-bottom: 12px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">UPI ID</label>
+                    <input type="text" id="upiId" placeholder="e.g. mobile@paytm" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:4px; box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">Amount (₹)</label>
+                    <input type="number" id="upiAmount" placeholder="Enter amount" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:4px; box-sizing:border-box;">
+                </div>
+                <button onclick="submitWithdraw('upi')" style="width:100%; background:#28a745; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Withdraw via UPI</button>
+            </div>
+
+            <!-- Bank Form -->
+            <div id="bankForm" style="display: none;">
+                <div style="margin-bottom: 10px;">
+                    <label style="display:block; font-size:12px; font-weight:600; margin-bottom:2px;">Account Holder Name</label>
+                    <input type="text" id="bankName" placeholder="As per bank passbook" style="width:100%; padding:8px; border:1px solid #ced4da; border-radius:4px; box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="display:block; font-size:12px; font-weight:600; margin-bottom:2px;">Account Number</label>
+                    <input type="text" id="bankAccNo" placeholder="Enter account number" style="width:100%; padding:8px; border:1px solid #ced4da; border-radius:4px; box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="display:block; font-size:12px; font-weight:600; margin-bottom:2px;">IFSC Code</label>
+                    <input type="text" id="bankIfsc" placeholder="Enter IFSC code" style="width:100%; padding:8px; border:1px solid #ced4da; border-radius:4px; box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; font-size:12px; font-weight:600; margin-bottom:2px;">Amount (₹)</label>
+                    <input type="number" id="bankAmount" placeholder="Enter amount" style="width:100%; padding:8px; border:1px solid #ced4da; border-radius:4px; box-sizing:border-box;">
+                </div>
+                <button onclick="submitWithdraw('bank')" style="width:100%; background:#28a745; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold;">Withdraw via Bank</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Status Modal -->
+    <div id="statusModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-modal" onclick="closeStatusModal()">&times;</span>
+            <h3 style="margin-top: 0; color: #333;">My Withdrawal Status</h3>
+            <div id="statusListContainer" style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
+                <p>Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refer & Earn Modal -->
+    <div id="referModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px;">
+            <span class="close-modal" onclick="closeReferModal()">&times;</span>
+            <h3 style="margin-top: 0; color: #007bff; text-align: center;">🎁 Refer & Earn ₹50</h3>
+            
+            <div style="background: #e8f4fd; padding: 12px; border-radius: 6px; font-size: 13px; color: #0c5460; margin-bottom: 15px; border: 1px solid #bee5eb;">
+                <strong>📋 Instructions:</strong>
+                <ul style="margin: 5px 0 0 15px; padding: 0;">
+                    <li>Share your unique referral link with friends via WhatsApp or SMS.</li>
+                    <li>When your friend signs up using your link...</li>
+                    <li>You will get <strong>₹50 bonus</strong> added to your wallet as soon as your friend completes their <strong>first task</strong>!</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="display:block; font-size:12px; font-weight:600; margin-bottom:4px;">Your Referral Link:</label>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="refLinkBox" readonly style="width:100%; padding:8px; border:1px solid #ced4da; border-radius:4px; background:#f8f9fa; font-size:12px;" />
+                    <button onclick="copyRefLink()" style="background:#007bff; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Copy</button>
+                </div>
+            </div>
+
+            <!-- Social Share Buttons -->
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button onclick="shareOnWhatsApp()" style="flex:1; background:#25d366; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:13px;">💬 WhatsApp</button>
+                <button onclick="shareOnSMS()" style="flex:1; background:#17a2b8; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:13px;">📱 SMS</button>
+                <button onclick="nativeShare()" style="flex:1; background:#6c757d; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:13px;">🔗 Share</button>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; text-align: center; font-size: 13px; font-weight: bold; color: #333;" id="refStatsText">
+                Loading stats...
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar with Refer & Earn Option -->
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleMenu()">&times;</a>
+        <a href="index.html">Home</a>
+        <a href="#" onclick="openReferModal()">🎁 Refer & Earn</a>
+        <a href="#" onclick="openStatusModal()">Withdrawal Status</a>
+        <a href="about.html">About Us</a>
+        <a href="terms.html">Terms & Conditions</a>
+        <a href="#" onclick="logoutUser()">Logout</a>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search offers (e.g. Angle One)..." onkeyup="searchTasks()">
+    </div>
+
+    <main class="container">
+        <h2>Available Offers</h2>
+        <div id="taskList" class="task-grid"></div>
+    </main>
+
+    <script>
+        const phone = localStorage.getItem('userPhone');
+        if (!phone && localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        async function fetchUserWallet() {
+            if (!phone) return;
+            try {
+                const res = await fetch(`/api/user/wallet/${phone}`);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('walletBalance').innerText = '₹' + data.wallet;
+                }
+            } catch (err) {
+                console.error("Wallet fetch error:", err);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchUserWallet();
+            fetchTasks();
+            setInterval(fetchUserWallet, 4000);
+        });
+
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.width = sidebar.style.width === '250px' ? '0' : '250px';
+        }
+
+        function logoutUser() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        function openWithdrawModal() {
+            document.getElementById('withdrawModal').style.display = 'flex';
+        }
+        function closeWithdrawModal() {
+            document.getElementById('withdrawModal').style.display = 'none';
+        }
+
+        function openStatusModal() {
+            toggleMenu();
+            document.getElementById('statusModal').style.display = 'flex';
+            loadUserWithdrawals();
+        }
+        function closeStatusModal() {
+            document.getElementById('statusModal').style.display = 'none';
+        }
+
+        function openReferModal() {
+            toggleMenu();
+            document.getElementById('referModal').style.display = 'flex';
+            loadReferralData();
+        }
+        function closeReferModal() {
+            document.getElementById('referModal').style.display = 'none';
+        }
+
+        async function loadReferralData() {
+            try {
+                const refLink = `${window.location.origin}/login.html?ref=${phone}`;
+                document.getElementById('refLinkBox').value = refLink;
+
+                const res = await fetch(`/api/user/referral-stats/${phone}`);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('refStatsText').innerHTML = `Total Friends Joined: ${data.totalInvites} | Successful (Task Done): ${data.successfulInvites}<br><span style="color:green; font-size:15px;">Total Earned: ₹${data.totalEarnings}</span>`;
+                }
+            } catch (err) {
+                console.error("Referral fetch error:", err);
+            }
+        }
+
+        function copyRefLink() {
+            const box = document.getElementById('refLinkBox');
+            box.select();
+            document.execCommand('copy');
+            alert("Referral link copied to clipboard!");
+        }
+
+        function getShareText() {
+            const refLink = document.getElementById('refLinkBox').value;
+            return `🔥 *Welcome to EarningApp!* 🔥\n\nEarn real cash daily by completing simple tasks and offers. Refer your friends and get *₹50 bonus* instantly when they complete their first task!\n\n👉 Click here to join and start earning:\n${refLink}`;
+        }
+
+        function shareOnWhatsApp() {
+            const text = encodeURIComponent(getShareText());
+            // Web WhatsApp direct open karega bina loading ke
+            window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        }
+
+        function shareOnSMS() {
+            const rawText = `Join EarningApp! Complete simple tasks, earn cash daily, and get ₹50 per referral. Sign up here: ${document.getElementById('refLinkBox').value}`;
+            const text = encodeURIComponent(rawText);
+            window.location.href = `sms:?body=${text}`;
+        }
+
+        async function nativeShare() {
+            const refLink = document.getElementById('refLinkBox').value;
+            const shareText = `🔥 Welcome to EarningApp!\nEarn cash daily by completing simple tasks and get ₹50 per referral when your friend completes their first task.\n\nJoin here:`;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'EarningApp - Refer & Earn',
+                        text: shareText,
+                        url: refLink,
+                    });
+                } catch (err) {
+                    console.log('Share canceled or failed', err);
+                }
+            } else {
+                // Clipboard copy fallback for PC/Desktop
+                const textArea = document.createElement("textarea");
+                textArea.value = getShareText().replace(/\*/g, ''); // Remove markdown stars for clean text
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert("Promotional message & link copied to clipboard! You can now paste it anywhere.");
+                } catch (err) {
+                    alert("Failed to copy text.");
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        async function loadUserWithdrawals() {
+            const container = document.getElementById('statusListContainer');
+            try {
+                const res = await fetch(`/api/user/withdrawals/${phone}`);
+                const list = await res.json();
+                if (list.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#777;">No withdrawal requests found.</p>';
+                    return;
+                }
+                let html = '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
+                html += '<tr style="background:#f1f3f5;"><th style="padding:8px; border:1px solid #ddd;">Amount</th><th style="padding:8px; border:1px solid #ddd;">Details</th><th style="padding:8px; border:1px solid #ddd;">Status</th></tr>';
+                list.forEach(item => {
+                    html += `<tr>
+                        <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">₹${item.amount}</td>
+                        <td style="padding:8px; border:1px solid #ddd;">${item.accountDetails}</td>
+                        <td style="padding:8px; border:1px solid #ddd; font-weight:bold; color:${item.status==='Approved'?'green':'orange'}">${item.status}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = '<p>Error loading status.</p>';
+            }
+        }
+
+        function switchMethod(method) {
+            if (method === 'upi') {
+                document.getElementById('upiForm').style.display = 'block';
+                document.getElementById('bankForm').style.display = 'none';
+                document.getElementById('upiTabBtn').style.background = '#007bff';
+                document.getElementById('upiTabBtn').style.color = 'white';
+                document.getElementById('bankTabBtn').style.background = '#e9ecef';
+                document.getElementById('bankTabBtn').style.color = 'black';
+            } else {
+                document.getElementById('upiForm').style.display = 'none';
+                document.getElementById('bankForm').style.display = 'block';
+                document.getElementById('bankTabBtn').style.background = '#007bff';
+                document.getElementById('bankTabBtn').style.color = 'white';
+                document.getElementById('upiTabBtn').style.background = '#e9ecef';
+                document.getElementById('upiTabBtn').style.color = 'black';
+            }
+        }
+
+        async function submitWithdraw(type) {
+            let amount, details;
+            if (!phone) {
+                alert("Session expired! Please login again.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (type === 'upi') {
+                const upiId = document.getElementById('upiId').value.trim();
+                amount = document.getElementById('upiAmount').value.trim();
+                if (!upiId || !amount) {
+                    alert("Please fill UPI ID and Amount!");
+                    return;
+                }
+                details = `UPI ID: ${upiId}`;
+            } else {
+                const name = document.getElementById('bankName').value.trim();
+                const acc = document.getElementById('bankAccNo').value.trim();
+                const ifsc = document.getElementById('bankIfsc').value.trim();
+                amount = document.getElementById('bankAmount').value.trim();
+                if (!name || !acc || !ifsc || !amount) {
+                    alert("Please fill all Bank details and Amount!");
+                    return;
+                }
+                details = `Bank | Name: ${name}, Acc: ${acc}, IFSC: ${ifsc}`;
+            }
+
+            try {
+                const res = await fetch('/api/withdraw', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userPhone: phone, amount: Number(amount), accountDetails: details })
+                });
+                const data = await res.json();
+                alert(data.message);
+                
+                if(data.success) {
+                    document.getElementById('upiId').value = '';
+                    document.getElementById('upiAmount').value = '';
+                    document.getElementById('bankName').value = '';
+                    document.getElementById('bankAccNo').value = '';
+                    document.getElementById('bankIfsc').value = '';
+                    document.getElementById('bankAmount').value = '';
+                    closeWithdrawModal();
+                    fetchUserWallet();
+                }
+            } catch (err) {
+                console.error("Withdrawal network error:", err);
+                alert("Server error during withdrawal!");
+            }
+        }
+
+        async function fetchTasks() {
+            try {
+                const response = await fetch('/api/tasks');
+                const tasks = await response.json();
+                const taskList = document.getElementById('taskList');
+                taskList.innerHTML = '';
+
+                if (tasks.length === 0) {
+                    taskList.innerHTML = '<p>No offers available right now.</p>';
+                    return;
+                }
+
+                tasks.forEach(task => {
+                    const card = document.createElement('div');
+                    card.className = 'task-card';
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <img src="${task.logoUrl}" alt="Logo" class="task-logo" onerror="this.src='https://via.placeholder.com/50'">
+                            <h3>${task.title}</h3>
+                        </div>
+                        <p class="task-desc">${task.description}</p>
+                        <div class="card-footer" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                            <span class="reward">Reward: ₹${task.rewardAmount}</span>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <a href="${task.referLink}" target="_blank" class="proceed-btn" style="flex:1; text-align:center;">Proceed</a>
+                                <button onclick="submitTask('${task.title}', ${task.rewardAmount})" style="flex:1; background:#28a745; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold;">I Completed - Claim</button>
+                            </div>
+                        </div>
+                    `;
+                    taskList.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Error loading tasks:", err);
+            }
+        }
+
+        async function submitTask(title, amount) {
+            if(!phone) {
+                alert("Please login as customer to claim rewards!");
+                return;
+            }
+            const res = await fetch('/api/submit-task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userPhone: phone, taskTitle: title, rewardAmount: amount })
+            });
+            const data = await res.json();
+            alert(data.message);
+        }
+
+        function searchTasks() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.task-card');
+            cards.forEach(card => {
+                const title = card.querySelector('h3').innerText.toLowerCase();
+                card.style.display = title.includes(input) ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

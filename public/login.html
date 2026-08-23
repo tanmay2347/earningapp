@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Signup - EarningApp</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="center-body">
+    <div class="login-box">
+        <h2 id="formTitle">Login</h2>
+        
+        <div class="auth-tabs" style="margin-bottom: 15px;">
+            <button type="button" onclick="switchMode('login')" id="loginTabBtn" style="background:#007bff; padding:8px 15px; color:white; border:none; cursor:pointer; border-radius:4px;">Login</button>
+            <button type="button" onclick="switchMode('signup')" id="signupTabBtn" style="background:#ccc; padding:8px 15px; border:none; cursor:pointer; border-radius:4px;">Sign Up</button>
+        </div>
+
+        <form id="authForm">
+            <input type="text" id="nameInput" placeholder="Full Name" style="display:none;"><br>
+            <input type="text" id="phoneInput" placeholder="Phone Number" required><br>
+            <input type="password" id="passInput" placeholder="Create Password" style="display:none;" required><br>
+            
+            <!-- Referral Code Input (Only visible during Signup) -->
+            <div id="referralInputContainer" style="display:none; margin-bottom: 12px;">
+                <input type="text" id="referralInput" placeholder="Referral Code (Optional)" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:4px; box-sizing:border-box;">
+            </div>
+
+            <button type="submit" id="submitBtn">Login</button>
+        </form>
+
+        <p id="errorMsg" style="color: red; margin-top: 10px; font-size: 14px;"></p>
+    </div>
+
+    <script>
+        let isSignup = false;
+
+        function switchMode(mode) {
+            isSignup = (mode === 'signup');
+            document.getElementById('formTitle').innerText = isSignup ? 'Create New Account' : 'Login / Admin Access';
+            document.getElementById('nameInput').style.display = isSignup ? 'block' : 'none';
+            document.getElementById('referralInputContainer').style.display = isSignup ? 'block' : 'none';
+            document.getElementById('passInput').style.display = (isSignup || document.getElementById('phoneInput').value === 'admin_master') ? 'block' : 'none';
+            document.getElementById('submitBtn').innerText = isSignup ? 'Register Now' : 'Login';
+            
+            document.getElementById('loginTabBtn').style.background = isSignup ? '#ccc' : '#007bff';
+            document.getElementById('signupTabBtn').style.background = isSignup ? '#007bff' : '#ccc';
+            document.getElementById('errorMsg').innerText = '';
+        }
+
+        // URL se ?ref=code automatic detect karne ke liye
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (refCode) {
+                switchMode('signup'); // Automatic signup tab khol dega
+                const refField = document.getElementById('referralInput');
+                refField.value = refCode;
+                refField.style.backgroundColor = '#e9ecef'; // Visual cue that it's pre-filled
+            }
+        });
+
+        document.getElementById('phoneInput').addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (val === 'admin_master' || isSignup) {
+                document.getElementById('passInput').style.display = 'block';
+            } else if (!isSignup) {
+                document.getElementById('passInput').style.display = 'none';
+            }
+        });
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phoneInput').value;
+            const password = document.getElementById('passInput').value;
+            const name = document.getElementById('nameInput').value;
+            const referralCode = document.getElementById('referralInput').value;
+
+            let endpoint = isSignup ? 'http://localhost:5000/api/signup' : 'http://localhost:5000/api/login';
+            let payload = isSignup ? { name, phone, password, referralCode } : { username: phone, password: password, phone: phone };
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    if (data.role === 'admin') {
+                        localStorage.setItem('isAdmin', 'true');
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        localStorage.setItem('userPhone', data.user.phone);
+                        localStorage.setItem('walletBalance', data.user.wallet || 0);
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    document.getElementById('errorMsg').innerText = data.message;
+                }
+            } catch (err) {
+                document.getElementById('errorMsg').innerText = "Network or server connection failed!";
+            }
+        });
+    </script>
+</body>
+</html>
