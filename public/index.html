@@ -228,7 +228,6 @@
 
         function shareOnWhatsApp() {
             const text = encodeURIComponent(getShareText());
-            // Web WhatsApp direct open karega bina loading ke
             window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
         }
 
@@ -253,9 +252,8 @@
                     console.log('Share canceled or failed', err);
                 }
             } else {
-                // Clipboard copy fallback for PC/Desktop
                 const textArea = document.createElement("textarea");
-                textArea.value = getShareText().replace(/\*/g, ''); // Remove markdown stars for clean text
+                textArea.value = getShareText().replace(/\*/g, '');
                 document.body.appendChild(textArea);
                 textArea.select();
                 try {

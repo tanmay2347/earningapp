@@ -6,8 +6,8 @@
     <title>Login / Signup - EarningApp</title>
     
     <!-- WhatsApp / Social Media Preview Meta Tags -->
-    <meta property="og:title" content="EarningApp - Earn Real Cash Daily">
-    <meta property="og:description" content="Complete simple tasks and earn rewards. Refer your friends and get ₹50 bonus instantly!">
+    <meta property="og:title" content="EarningApp - Best Platform to Earn Daily Cash">
+    <meta property="og:description" content="Complete simple tasks and earn rewards. Free me task complete karo aur wallet me paise jeeto. Sign up karte hi shuru karein apni earning journey!">
     <meta property="og:image" content="https://earningapp-bhp9.onrender.com/banner.jpg">
     <meta property="og:url" content="https://earningapp-bhp9.onrender.com/login.html">
     <meta property="og:type" content="website">
@@ -55,15 +55,14 @@
             document.getElementById('errorMsg').innerText = '';
         }
 
-        // URL se ?ref=code automatic detect karne ke liye
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref');
             if (refCode) {
-                switchMode('signup'); // Automatic signup tab khol dega
+                switchMode('signup');
                 const refField = document.getElementById('referralInput');
                 refField.value = refCode;
-                refField.style.backgroundColor = '#e9ecef'; // Visual cue that it's pre-filled
+                refField.style.backgroundColor = '#e9ecef';
             }
         });
 
@@ -78,7 +77,7 @@
 
         document.getElementById('authForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const phone = document.getElementById('phoneInput').value; // Yahan theek kar diya hai
+            const phone = document.getElementById('phoneInput').value;
             const password = document.getElementById('passInput').value;
             const name = document.getElementById('nameInput').value;
             const referralCode = document.getElementById('referralInput').value;
