@@ -344,3 +344,51 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+// Native fetch ka use karke Telegram Bot integration
+if (process.env.TELEGRAM_BOT_TOKEN) {
+    const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    
+    // Telegram par messages check karne aur reply dene ka loop (Polling)
+    let offset = 0;
+    setInterval(async () => {
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${offset}&timeout=30`);
+            const data = await res.json();
+            
+            if (data.ok && data.result.length > 0) {
+                for (let update of data.result) {
+                    offset = update.update_id + 1;
+                    
+                    if (update.message && update.message.text === '/start') {
+                        const chatId = update.message.chat.id;
+                        const webUrl = 'https://earningapp-bhp9.onrender.com/login.html';
+                        
+                        const text = `🔥 *Welcome to EarningApp!* 🔥\n\nEarn real cash daily by completing simple tasks and offers. Refer your friends and get *₹50 bonus* instantly!\n\n👉 Click the button below to open the app and start earning:`;
+                        
+                        const payload = {
+                            chat_id: chatId,
+                            text: text,
+                            parse_mode: 'Markdown',
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [{ text: '🚀 Open Earning App', url: webUrl }]
+                                ]
+                            }
+                        };
+
+                        await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    }
+                }
+            }
+        } catch (err) {
+            // Network glitch ignore karein
+        }
+    }, 2000);
+
+    console.log('Telegram Bot Polling Started Successfully!');
+}
