@@ -71,11 +71,18 @@
         <div class="step-item"><div class="step-dot"></div><span>Take screenshot & upload below</span></div>
     </div>
 
-    <!-- Screenshot Upload Section (Initially Hidden, Appears after clicking Install) -->
     <div id="uploadSection" class="upload-card">
         <h3 style="margin-top:0; color:#00796b;">📸 Upload Proof Screenshot</h3>
-        <p style="font-size: 13px; color: #555;">Upload task completion screenshot for admin verification.</p>
-        <input type="file" id="proofImage" accept="image/*" style="margin: 15px 0; width: 100%;">
+        <p style="font-size: 13px; color: #555; margin-bottom: 20px;">Upload task completion screenshot for admin verification.</p>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="proofImage" style="background: #e0f2f1; color: #00796b; padding: 12px 24px; border-radius: 25px; font-weight: bold; cursor: pointer; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                📁 Choose Screenshot
+            </label>
+            <input type="file" id="proofImage" accept="image/*" style="display: none;" onchange="updateFileName(this)">
+            <p id="fileNameDisplay" style="font-size: 13px; color: #666; margin-top: 8px;">No file chosen</p>
+        </div>
+
         <button onclick="submitTaskProof()" class="btn-main" style="background: #28a745;">Submit For Verification 🚀</button>
     </div>
 
@@ -101,7 +108,18 @@
         document.getElementById('taskReward').innerText = '🪙 ₹' + (reward || 0);
         document.getElementById('taskLogo').src = logo || 'https://via.placeholder.com/60';
 
-        let taskOpened = false;
+        function updateFileName(input) {
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            if (input.files && input.files.length > 0) {
+                fileNameDisplay.innerText = "Selected: " + input.files[0].name;
+                fileNameDisplay.style.color = "#28a745";
+                fileNameDisplay.style.fontWeight = "bold";
+            } else {
+                fileNameDisplay.innerText = "No file chosen";
+                fileNameDisplay.style.color = "#666";
+                fileNameDisplay.style.fontWeight = "normal";
+            }
+        }
 
         function openTaskLink() {
             if (!link) {
@@ -109,7 +127,6 @@
                 return;
             }
             window.open(link, '_blank');
-            taskOpened = true;
 
             // Hide action bar and show screenshot upload section
             document.getElementById('actionBar').style.display = 'none';
@@ -127,31 +144,6 @@
             const file = fileInput.files[0];
             const reader = new FileReader();
 
-            reader.onloadasync = async function(event) {
-                const base64Image = event.target.result;
-
-                try {
-                    const res = await fetch('/api/submit-task', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            userEmail: userEmail,
-                            taskTitle: title,
-                            rewardAmount: Number(reward),
-                            proofImage: base64Image
-                        })
-                    });
-                    const data = await res.json();
-                    alert(data.message || "Submitted successfully!");
-                    if(data.success) {
-                        window.location.href = 'index.html';
-                    }
-                } catch (err) {
-                    alert("Error submitting task proof!");
-                }
-            };
-            
-            // Fix for file reader execution
             reader.onload = async function(uploadEvent) {
                 const base64Image = uploadEvent.target.result;
                 try {
