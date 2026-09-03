@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refer & Earn - EarningApp</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding-bottom: 100px;
+        }
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .page-title { display: flex; align-items: center; gap: 15px; font-size: 22px; font-weight: bold; color: #111; }
+        .back-btn { background: white; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .refer-card {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            margin: 10px auto;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .copy-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+            border: 2px dashed #26a69a;
+            border-radius: 30px;
+            padding: 8px 8px 8px 20px;
+            margin: 15px 0;
+        }
+        .copy-btn {
+            background: #26a69a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .whatsapp-share-btn {
+            background: #25d366;
+            color: white;
+            border: none;
+            width: 90%;
+            max-width: 450px;
+            display: block;
+            margin: 15px auto;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #00796b; border-radius: 30px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3); }
+        .nav-item { color: rgba(255,255,255,0.7); text-align: center; font-size: 11px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.2); padding: 6px 16px; border-radius: 20px; color: white; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="page-title">
+            <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+            Refer & Earn
+        </div>
+        <div style="background: white; padding: 6px 14px; border-radius: 30px; font-weight: bold;">🪙 <span id="topBalance">0.00</span></div>
+    </header>
+
+    <div style="text-align: center; font-size: 60px; margin: 10px 0;">💰</div>
+
+    <div class="refer-card">
+        <h3>Invite Friends & Earn</h3>
+        <p style="font-size: 13px; color: #666;">Copy referral link and share it with your friends</p>
+        
+        <div class="copy-box">
+            <span id="refLinkText" style="font-size: 13px; color: #333; overflow: hidden; text-overflow: ellipsis;">Loading...</span>
+            <button class="copy-btn" onclick="copyLink()">Copy</button>
+        </div>
+    </div>
+
+    <div class="refer-card">
+        <h4 style="margin-top: 0; text-align: left;">How It Works?</h4>
+        <p style="text-align: left; font-size: 13px; color: #555; line-height: 1.6;">
+            • Share the link to your friends and family<br>
+            • Tell them to sign up using your link<br>
+            • When your friend completes their first task, you get ₹50 instantly!
+        </p>
+    </div>
+
+    <div class="refer-card" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Total Referrals</span>
+        <b id="totalRef" style="font-size: 18px; color: #00796b;">0</b>
+    </div>
+
+    <button class="whatsapp-share-btn" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
+        <a href="earn.html" class="nav-item"><span>🪙</span><span>Earn</span></a>
+        <a href="refer.html" class="nav-item active"><span>👥</span><span>Refer</span></a>
+        <a href="wallet.html" class="nav-item"><span>👛</span><span>Wallet</span></a>
+        <a href="profile.html" class="nav-item"><span>👤</span><span>Profile</span></a>
+    </nav>
+
+    <script>
+        const phone = localStorage.getItem('userPhone');
+        const refLink = `${window.location.origin}/login.html?ref=${phone}`;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('refLinkText').innerText = refLink;
+            if(phone) loadReferStats();
+        });
+
+        async function loadReferStats() {
+            try {
+                const res = await fetch(`/api/user/referral-stats/${phone}`);
+                const data = await res.json();
+                if(data.success) {
+                    document.getElementById('totalRef').innerText = data.totalInvites;
+                    document.getElementById('topBalance').innerText = data.wallet || '0.00';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(refLink);
+            alert("Referral link copied to clipboard!");
+        }
+
+        function shareWhatsApp() {
+            const text = encodeURIComponent(`🔥 Join EarningApp and earn real cash daily! Sign up here:\n${refLink}`);
+            window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        }
+    </script>
+</body>
+</html>

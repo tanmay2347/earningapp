@@ -1,32 +1,260 @@
 /* General Reset & Layout */
-body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f9; color: #333; }
-.navbar { background: #333; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-.logo { font-size: 20px; font-weight: bold; }
-.menu-icon { font-size: 24px; cursor: pointer; }
-.wallet-box { background: #ff9800; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; color: black; }
+body {
+    background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding-bottom: 90px;
+    color: #333;
+}
 
-/* Sidebar */
-.sidebar { height: 100%; width: 0; position: fixed; z-index: 10; top: 0; left: 0; background-color: #111; overflow-x: hidden; transition: 0.3s; padding-top: 60px; }
-.sidebar a { padding: 8px 8px 8px 32px; text-decoration: none; font-size: 18px; color: #818181; display: block; transition: 0.3s; }
-.sidebar a:hover { color: #f1f1f1; }
-.sidebar .close-btn { position: absolute; top: 0; right: 25px; font-size: 36px; margin-left: 50px; }
+/* Top Profile & Header Section */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+}
 
-/* Search & Container */
-.search-container { text-align: center; margin: 20px; }
-.search-container input { width: 80%; max-width: 400px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
-.container { padding: 20px; max-width: 800px; margin: auto; }
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-/* Task Cards */
-.task-grid { display: grid; gap: 20px; }
-.task-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-.card-header { display: flex; align-items: center; gap: 15px; }
-.task-logo { width: 50px; height: 50px; object-fit: contain; border-radius: 5px; background: #eee; }
-.task-desc { color: #666; font-size: 14px; margin: 10px 0; }
-.card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-.reward { color: green; font-weight: bold; }
-.proceed-btn { background: #007bff; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; }
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
 
-/* Admin & Login Forms */
+.user-info h4 {
+    margin: 0;
+    font-size: 13px;
+    color: #555;
+}
+
+.user-info h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #222;
+}
+
+.top-wallet-box {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 6px 14px;
+    border-radius: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    font-weight: bold;
+    font-size: 15px;
+    gap: 6px;
+    cursor: pointer;
+}
+
+/* Banner Area */
+.banner-container {
+    width: 90%;
+    height: 130px;
+    background: #ffffff;
+    margin: 10px auto 20px auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* Offers Wall Header */
+.offers-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    margin-bottom: 12px;
+}
+
+.offers-section-header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #111;
+}
+
+.offer-status-btn {
+    background: #26a69a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
+}
+
+/* Task Cards (Screenshot Jaisa Style) */
+.task-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 16px;
+    max-width: 600px;
+    margin: auto;
+}
+
+.task-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+}
+
+.card-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+}
+
+.task-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    object-fit: contain;
+    background: #f8f9fa;
+}
+
+.task-details h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    color: #222;
+}
+
+.task-desc {
+    margin: 0;
+    font-size: 12px;
+    color: #777;
+}
+
+.card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.reward {
+    background: #e0f2f1;
+    color: #00796b;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.proceed-btn {
+    background: #007bff;
+    color: white;
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.claim-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Bottom Floating Navigation Bar */
+.bottom-nav {
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 450px;
+    background: #00796b;
+    border-radius: 30px;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3);
+    z-index: 1000;
+}
+
+.nav-item {
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    font-size: 11px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+}
+
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+/* Modals & Popups */
+.modal-overlay { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.5); 
+    z-index: 1000; 
+    justify-content: center; 
+    align-items: center; 
+}
+
+.modal-content { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 12px; 
+    width: 90%; 
+    max-width: 450px; 
+    position: relative; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+}
+
+.close-modal { 
+    position: absolute; 
+    top: 10px; 
+    right: 15px; 
+    cursor: pointer; 
+    font-size: 22px; 
+    font-weight: bold; 
+    color: #555; 
+}
+
+/* Admin / Login / Forms General */
 .center-body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #eef2f3; }
 .login-box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 300px; }
 .login-box input, .admin-form input, .admin-form textarea { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
@@ -34,6 +262,7 @@ body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f9; color: #3
 .login-box button, .admin-form button { background: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 10px; }
 .admin-form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
+/* Toast Notifications */
 #toastNotification {
     position: fixed;
     top: 20px;
@@ -50,9 +279,11 @@ body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f9; color: #3
     transform: translateY(-20px);
     pointer-events: none;
 }
+
 #toastNotification.show {
     opacity: 1;
     transform: translateY(0);
 }
+
 #toastNotification.success { background: #28a745; }
 #toastNotification.error { background: #dc3545; }

@@ -5,23 +5,21 @@ require('dotenv').config();
 
 const app = express();
 
-// Render ya kisi bhi proxy ke liye https protocol sahi se detect karne ke liye
 app.set('trust proxy', 1);
 
 app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
-// Database Connection & Admin Wallet Initialization
+// Database Connection & Admin Initialization
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/earning-app')
 .then(async () => {
     console.log('MongoDB Connected Successfully!');
-    let adminUser = await User.findOne({ phone: 'admin_master' });
+    let adminUser = await User.findOne({ email: 'admin@earningapp.com' });
     if (!adminUser) {
-        await User.create({ name: 'Admin Master', phone: 'admin_master', wallet: 10000 });
+        await User.create({ name: 'Admin Master', email: 'admin@earningapp.com', wallet: 10000 });
         console.log('Admin Wallet Initialized with ₹10,000');
     }
-    await Submission.deleteMany({});
 })
 .catch((err) => console.log('Database connection error: ', err));
 
@@ -35,11 +33,10 @@ const taskSchema = new mongoose.Schema({
 });
 const Task = mongoose.model('Task', taskSchema);
 
-// User Schema & Model (Updated with Referral Tracking)
+// User Schema & Model (Updated for Email-based Authentication)
 const userSchema = new mongoose.Schema({
-    name: { type: String },
-    phone: { type: String, required: true, unique: true },
-    password: { type: String },
+    name: { type: String, default: 'User' },
+    email: { type: String, required: true, unique: true },
     wallet: { type: Number, default: 0 },
     referredBy: { type: String, default: '' },
     referralBonusGiven: { type: Boolean, default: false }
@@ -48,7 +45,7 @@ const User = mongoose.model('User', userSchema);
 
 // Task Submission Schema & Model
 const submissionSchema = new mongoose.Schema({
-    userPhone: { type: String, required: true },
+    userEmail: { type: String, required: true },
     taskTitle: { type: String, required: true },
     rewardAmount: { type: Number, required: true },
     status: { type: String, default: 'Pending' }
@@ -57,81 +54,68 @@ const Submission = mongoose.model('Submission', submissionSchema);
 
 // Withdrawal Schema & Model
 const withdrawalSchema = new mongoose.Schema({
-    userPhone: { type: String, required: true },
+    userEmail: { type: String, required: true },
     amount: { type: Number, required: true },
     accountDetails: { type: String, required: true },
     status: { type: String, default: 'Pending' }
 });
 const Withdrawal = mongoose.model('Withdrawal', withdrawalSchema);
 
-// --- 1. SIGNUP ROUTE (With Referral Code Handling) ---
+// --- 1. SIGNUP / LOGIN ROUTE (Email Based with Referral Handling) ---
 app.post('/api/signup', async (req, res) => {
     try {
-        const { name, phone, password, referralCode } = req.body;
-        let trimmedPhone = phone.trim();
-        
-        let existingUser = await User.findOne({ phone: trimmedPhone });
-        if (existingUser) {
-            return res.json({ success: false, message: "Phone number already registered!" });
+        const { email, referredBy } = req.body;
+        if (!email) {
+            return res.json({ success: false, message: "Email is required!" });
+        }
+        let cleanEmail = email.trim().toLowerCase();
+
+        // Check if Admin
+        if (cleanEmail === 'admin@earningapp.com') {
+            return res.json({ success: true, role: 'admin', message: "Admin login successful!" });
         }
 
-        let referrerPhone = '';
-        if (referralCode && referralCode.trim() !== trimmedPhone) {
-            let referrer = await User.findOne({ phone: referralCode.trim() });
+        let existingUser = await User.findOne({ email: cleanEmail });
+        if (existingUser) {
+            return res.json({ success: true, role: 'customer', user: existingUser, message: "Login successful!" });
+        }
+
+        let referrerEmail = '';
+        if (referredBy && referredBy.trim().toLowerCase() !== cleanEmail) {
+            let referrer = await User.findOne({ email: referredBy.trim().toLowerCase() });
             if (referrer) {
-                referrerPhone = referrer.phone;
+                referrerEmail = referrer.email;
             }
         }
 
         const newUser = new User({ 
-            name, 
-            phone: trimmedPhone, 
-            password, 
+            email: cleanEmail, 
             wallet: 0, 
-            referredBy: referrerPhone,
+            referredBy: referrerEmail,
             referralBonusGiven: false 
         });
         await newUser.save();
-        res.json({ success: true, role: 'customer', user: newUser, message: "Signup successful!" });
+        res.json({ success: true, role: 'customer', user: newUser, message: "Account created successfully!" });
     } catch (err) {
-        console.error("Signup Error:", err);
-        res.json({ success: false, message: "Server error during signup" });
+        console.error("Auth Error:", err);
+        res.json({ success: false, message: "Server error during authentication" });
     }
 });
 
-// --- 2. LOGIN ROUTE ---
-app.post('/api/login', async (req, res) => {
-    try {
-        const { username, password, phone } = req.body;
-        if (username === process.env.ADMIN_ID && password === process.env.ADMIN_PASS) {
-            return res.json({ success: true, role: 'admin', message: "Admin login successful!" });
-        }
-        const queryPhone = (phone || username).trim();
-        let user = await User.findOne({ phone: queryPhone });
-        if (!user) {
-            return res.json({ success: false, message: "User not found! Please Sign Up first." });
-        }
-        res.json({ success: true, role: 'customer', user, message: "Login successful!" });
-    } catch (err) {
-        console.error("Login Error:", err);
-        res.json({ success: false, message: "Invalid Credentials or Server Error" });
-    }
-});
-
-// --- 3. ADMIN WALLET ROUTE ---
+// --- 2. ADMIN WALLET ROUTE ---
 app.get('/api/admin/wallet', async (req, res) => {
     try {
-        let adminUser = await User.findOne({ phone: 'admin_master' });
+        let adminUser = await User.findOne({ email: 'admin@earningapp.com' });
         res.json({ success: true, wallet: adminUser ? adminUser.wallet : 0 });
     } catch (err) {
         res.status(500).json({ error: "Server Error" });
     }
 });
 
-// --- 4. USER WALLET ROUTE ---
-app.get('/api/user/wallet/:phone', async (req, res) => {
+// --- 3. USER WALLET ROUTE ---
+app.get('/api/user/wallet/:email', async (req, res) => {
     try {
-        const user = await User.findOne({ phone: req.params.phone.trim() });
+        const user = await User.findOne({ email: req.params.email.trim().toLowerCase() });
         if (!user) return res.json({ success: false, message: "User not found", wallet: 0 });
         res.json({ success: true, wallet: user.wallet });
     } catch (err) {
@@ -139,7 +123,7 @@ app.get('/api/user/wallet/:phone', async (req, res) => {
     }
 });
 
-// --- 5. TASKS ROUTES ---
+// --- 4. TASKS ROUTES ---
 app.get('/api/tasks', async (req, res) => {
     try {
         const tasks = await Task.find();
@@ -159,16 +143,7 @@ app.post('/api/admin/tasks', async (req, res) => {
     }
 });
 
-app.post('/api/admin/tasks/update/:id', async (req, res) => {
-    try {
-        await Task.findByIdAndUpdate(req.params.id, req.body);
-        res.json({ success: true, message: "Task updated successfully!" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Failed to update task" });
-    }
-});
-
-app.post('/api/admin/tasks/delete/:id', async (req, res) => {
+app.delete('/api/admin/tasks/delete/:id', async (req, res) => {
     try {
         await Task.findByIdAndDelete(req.params.id);
         res.json({ success: true, message: "Task deleted successfully!" });
@@ -177,18 +152,18 @@ app.post('/api/admin/tasks/delete/:id', async (req, res) => {
     }
 });
 
-// --- 6. TASK SUBMISSIONS & REFERRAL BONUS (₹50 on First Task) ---
+// --- 5. TASK SUBMISSIONS & REFERRAL BONUS (₹50 on First Task) ---
 app.post('/api/submit-task', async (req, res) => {
     try {
-        const { userPhone, taskTitle, rewardAmount } = req.body;
-        let phone = userPhone.trim();
+        const { userEmail, taskTitle, rewardAmount } = req.body;
+        let email = userEmail.trim().toLowerCase();
 
-        const newSub = new Submission({ userPhone: phone, taskTitle, rewardAmount, status: 'Pending' });
+        const newSub = new Submission({ userEmail: email, taskTitle, rewardAmount, status: 'Pending' });
         await newSub.save();
 
-        let currentUser = await User.findOne({ phone });
+        let currentUser = await User.findOne({ email });
         if (currentUser && currentUser.referredBy && !currentUser.referralBonusGiven) {
-            let referrer = await User.findOne({ phone: currentUser.referredBy });
+            let referrer = await User.findOne({ email: currentUser.referredBy });
             if (referrer) {
                 referrer.wallet += 50;
                 await referrer.save();
@@ -205,51 +180,11 @@ app.post('/api/submit-task', async (req, res) => {
     }
 });
 
-app.get('/api/admin/submissions', async (req, res) => {
-    try {
-        const subs = await Submission.find();
-        res.json(subs);
-    } catch (err) {
-        res.status(500).json({ error: "Server Error" });
-    }
-});
-
-app.post('/api/admin/approve/:id', async (req, res) => {
-    try {
-        const sub = await Submission.findById(req.params.id);
-        if (!sub || sub.status === 'Approved') {
-            return res.json({ success: false, message: "Already approved or not found" });
-        }
-
-        let adminUser = await User.findOne({ phone: 'admin_master' });
-        if (!adminUser || adminUser.wallet < sub.rewardAmount) {
-            return res.json({ success: false, message: "Admin wallet balance is insufficient!" });
-        }
-
-        adminUser.wallet -= sub.rewardAmount;
-        await adminUser.save();
-
-        let customer = await User.findOne({ phone: sub.userPhone.trim() });
-        if (customer) {
-            customer.wallet += sub.rewardAmount;
-            await customer.save();
-        }
-
-        sub.status = 'Approved';
-        await sub.save();
-
-        res.json({ success: true, message: `Successfully paid ₹${sub.rewardAmount} to customer!` });
-    } catch (err) {
-        console.error("Approval Error:", err);
-        res.json({ success: false, message: "Approval failed" });
-    }
-});
-
-// --- 7. WITHDRAWAL ROUTES (With 5% Admin Commission) ---
+// --- 6. WITHDRAWAL ROUTES (With 5% Admin Commission) ---
 app.post('/api/withdraw', async (req, res) => {
     try {
-        const { userPhone, amount, accountDetails } = req.body;
-        let user = await User.findOne({ phone: userPhone.trim() });
+        const { userEmail, amount, accountDetails } = req.body;
+        let user = await User.findOne({ email: userEmail.trim().toLowerCase() });
         
         if (!user) {
             return res.json({ success: false, message: "User not found!" });
@@ -268,69 +203,46 @@ app.post('/api/withdraw', async (req, res) => {
         await user.save();
 
         const commission = withdrawAmount * 0.05;
-        let adminUser = await User.findOne({ phone: 'admin_master' });
+        let adminUser = await User.findOne({ email: 'admin@earningapp.com' });
         if (adminUser) {
             adminUser.wallet += commission;
             await adminUser.save();
         }
 
         const newWithdraw = new Withdrawal({ 
-            userPhone: userPhone.trim(), 
+            userEmail: user.email, 
             amount: withdrawAmount, 
             accountDetails, 
             status: 'Pending' 
         });
         await newWithdraw.save();
         
-        res.json({ success: true, message: `Withdrawal request submitted successfully! (Admin earned ₹${commission} commission)` });
+        res.json({ success: true, message: `Withdrawal request submitted successfully!` });
     } catch (err) {
         console.error("Withdrawal Error:", err);
         res.json({ success: false, message: "Error processing withdrawal" });
     }
 });
 
-app.get('/api/admin/withdrawals', async (req, res) => {
+app.get('/api/user/withdrawals/:email', async (req, res) => {
     try {
-        const list = await Withdrawal.find();
+        const list = await Withdrawal.find({ userEmail: req.params.email.trim().toLowerCase() });
         res.json(list);
     } catch (err) {
         res.status(500).json({ error: "Server Error" });
     }
 });
 
-app.get('/api/user/withdrawals/:phone', async (req, res) => {
+// --- 7. REFERRAL STATS API ---
+app.get('/api/user/referral-stats/:email', async (req, res) => {
     try {
-        const list = await Withdrawal.find({ userPhone: req.params.phone.trim() });
-        res.json(list);
-    } catch (err) {
-        res.status(500).json({ error: "Server Error" });
-    }
-});
-
-app.post('/api/admin/approve-withdraw/:id', async (req, res) => {
-    try {
-        const wd = await Withdrawal.findById(req.params.id);
-        if (!wd || wd.status === 'Approved') {
-            return res.json({ success: false, message: "Already approved or not found" });
-        }
-        wd.status = 'Approved';
-        await wd.save();
-        res.json({ success: false, message: "Withdrawal request marked as Paid/Approved!" });
-    } catch (err) {
-        res.json({ success: false, message: "Approval failed" });
-    }
-});
-
-// --- 8. REFERRAL STATS API ---
-app.get('/api/user/referral-stats/:phone', async (req, res) => {
-    try {
-        const phone = req.params.phone.trim();
-        const invitedCount = await User.countDocuments({ referredBy: phone });
-        const rewardedCount = await User.countDocuments({ referredBy: phone, referralBonusGiven: true });
+        const email = req.params.email.trim().toLowerCase();
+        const invitedCount = await User.countDocuments({ referredBy: email });
+        const rewardedCount = await User.countDocuments({ referredBy: email, referralBonusGiven: true });
         
         res.json({ 
             success: true, 
-            referralLink: `${req.protocol}://${req.get('host')}/login.html?ref=${phone}`,
+            referralLink: `${req.protocol}://${req.get('host')}/login.html?ref=${email}`,
             totalInvites: invitedCount,
             successfulInvites: rewardedCount,
             totalEarnings: rewardedCount * 50
@@ -344,51 +256,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
-
-// Native fetch ka use karke Telegram Bot integration
-if (process.env.TELEGRAM_BOT_TOKEN) {
-    const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-    
-    // Telegram par messages check karne aur reply dene ka loop (Polling)
-    let offset = 0;
-    setInterval(async () => {
-        try {
-            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${offset}&timeout=30`);
-            const data = await res.json();
-            
-            if (data.ok && data.result.length > 0) {
-                for (let update of data.result) {
-                    offset = update.update_id + 1;
-                    
-                    if (update.message && update.message.text === '/start') {
-                        const chatId = update.message.chat.id;
-                        const webUrl = 'https://earningapp-bhp9.onrender.com/login.html';
-                        
-                        const text = `🔥 *Welcome to EarningApp!* 🔥\n\nEarn real cash daily by completing simple tasks and offers. Refer your friends and get *₹50 bonus* instantly!\n\n👉 Click the button below to open the app and start earning:`;
-                        
-                        const payload = {
-                            chat_id: chatId,
-                            text: text,
-                            parse_mode: 'Markdown',
-                            reply_markup: {
-                                inline_keyboard: [
-                                    [{ text: '🚀 Open Earning App', url: webUrl }]
-                                ]
-                            }
-                        };
-
-                        await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                    }
-                }
-            }
-        } catch (err) {
-            // Network glitch ignore karein
-        }
-    }, 2000);
-
-    console.log('Telegram Bot Polling Started Successfully!');
-}

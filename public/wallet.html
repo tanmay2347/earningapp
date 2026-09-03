@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet - EarningApp</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding-bottom: 100px;
+        }
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .page-title { display: flex; align-items: center; gap: 15px; font-size: 22px; font-weight: bold; color: #111; }
+        .back-btn { background: white; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* Top Balance Card */
+        .balance-card {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            margin: 10px auto 20px auto;
+            border-radius: 20px;
+            padding: 25px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .balance-card h3 { margin: 0; font-size: 14px; color: #666; }
+        .balance-card h1 { margin: 8px 0 15px 0; font-size: 32px; color: #111; }
+        .withdraw-btn {
+            background: #26a69a;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(38, 166, 154, 0.3);
+        }
+
+        /* Tabs (Earnings / My Redeems) */
+        .tabs-container {
+            display: flex;
+            background: white;
+            border-radius: 30px;
+            padding: 5px;
+            width: 90%;
+            max-width: 450px;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #555;
+            transition: 0.3s;
+        }
+        .tab-btn.active {
+            background: #26a69a;
+            color: white;
+            box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
+        }
+
+        /* History List */
+        .history-list { width: 90%; max-width: 450px; margin: auto; display: flex; flex-direction: column; gap: 10px; }
+        .history-card { background: white; border-radius: 16px; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #00796b; border-radius: 30px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3); }
+        .nav-item { color: rgba(255,255,255,0.7); text-align: center; font-size: 11px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.2); padding: 6px 16px; border-radius: 20px; color: white; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="page-title">
+            <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+            Wallet
+        </div>
+        <div style="background: white; padding: 6px 14px; border-radius: 30px; font-weight: bold;">🪙 <span id="topBalance">0.00</span></div>
+    </header>
+
+    <div class="balance-card">
+        <div>
+            <h3>Total Balance</h3>
+            <h1 id="totalBalance">₹0.00</h1>
+            <button class="withdraw-btn" onclick="openWithdrawModal()">Withdraw</button>
+        </div>
+        <div style="font-size: 50px;">🪙</div>
+    </div>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" id="earnTab" onclick="switchTab('earnings')">Earnings</button>
+        <button class="tab-btn" id="redeemTab" onclick="switchTab('redeems')">My Redeems</button>
+    </div>
+
+    <main class="history-list" id="historyContainer">
+        <p style="text-align:center; color:#555;">Loading history...</p>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
+        <a href="earn.html" class="nav-item"><span>🪙</span><span>Earn</span></a>
+        <a href="refer.html" class="nav-item"><span>👥</span><span>Refer</span></a>
+        <a href="wallet.html" class="nav-item active"><span>👛</span><span>Wallet</span></a>
+        <a href="profile.html" class="nav-item"><span>👤</span><span>Profile</span></a>
+    </nav>
+
+    <script>
+        const phone = localStorage.getItem('userPhone');
+        window.addEventListener('DOMContentLoaded', () => { if(phone) loadWalletData(); });
+
+        async function loadWalletData() {
+            try {
+                const res = await fetch(`/api/user/wallet/${phone}`);
+                const data = await res.json();
+                if(data.success) {
+                    document.getElementById('totalBalance').innerText = '₹' + data.wallet;
+                    document.getElementById('topBalance').innerText = data.wallet;
+                }
+                loadEarnings();
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadEarnings() {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = '<p style="text-align:center; color:#555;">No earnings yet.</p>';
+        }
+
+        function switchTab(type) {
+            if(type === 'earnings') {
+                document.getElementById('earnTab').classList.add('active');
+                document.getElementById('redeemTab').classList.remove('active');
+                loadEarnings();
+            } else {
+                document.getElementById('redeemTab').classList.add('active');
+                document.getElementById('earnTab').classList.remove('active');
+                loadRedeems();
+            }
+        }
+
+        async function loadRedeems() {
+            const container = document.getElementById('historyContainer');
+            try {
+                const res = await fetch(`/api/user/withdrawals/${phone}`);
+                const list = await res.json();
+                if(list.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#555;">No redeems found.</p>';
+                    return;
+                }
+                let html = '';
+                list.forEach(item => {
+                    html += `<div class="history-card">
+                        <div><b>₹${item.amount}</b><br><small>${item.accountDetails}</small></div>
+                        <span style="font-weight:bold; color:${item.status==='Approved'?'green':'orange'}">${item.status}</span>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            } catch(e) { container.innerHTML = '<p>Error loading redeems.</p>'; }
+        }
+
+        function openWithdrawModal() {
+            // Aap withdraw modal ya direct action yahan rakh sakte hain
+            alert("Withdrawal feature active!");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - EarningApp</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .admin-container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { color: #00796b; margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .btn { background: #00796b; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .btn-danger { background: #dc3545; padding: 6px 12px; width: auto; font-size: 12px; }
+        .task-list-admin { margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; }
+        .admin-task-card { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <h2>🛠️ Admin Dashboard - Add New Offer</h2>
+        
+        <!-- Offer Add karne ka Form -->
+        <div class="form-group">
+            <label>App / Task Title (e.g. Kotak)</label>
+            <input type="text" id="taskTitle" placeholder="Enter app name">
+        </div>
+        <div class="form-group">
+            <label>Description (e.g. earn upto 200)</label>
+            <input type="text" id="taskDesc" placeholder="Enter short description">
+        </div>
+        <div class="form-group">
+            <label>Reward Amount (₹)</label>
+            <input type="number" id="taskReward" placeholder="Enter reward amount">
+        </div>
+        <div class="form-group">
+            <label>Logo Image URL</label>
+            <input type="text" id="taskLogo" placeholder="https://example.com/logo.png">
+        </div>
+        <div class="form-group">
+            <label>Referral / Affiliate Link</label>
+            <input type="text" id="taskLink" placeholder="https://tracking-link.com">
+        </div>
+
+        <button class="btn" onclick="addNewTask()">Publish Offer to Customer Page</button>
+
+        <div class="task-list-admin">
+            <h3>Live Offers on Customer App</h3>
+            <div id="adminTaskList">Loading...</div>
+        </div>
+
+        <button onclick="localStorage.clear(); window.location.href='login.html';" style="background:#333; color:white; border:none; padding:10px; width:100%; border-radius:8px; margin-top:20px; cursor:pointer;">Logout Admin</button>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAdminTasks();
+        });
+
+        async function addNewTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDesc').value.trim();
+            const rewardAmount = document.getElementById('taskReward').value.trim();
+            const logoUrl = document.getElementById('taskLogo').value.trim();
+            const referLink = document.getElementById('taskLink').value.trim();
+
+            if(!title || !rewardAmount || !referLink) {
+                alert("Please fill title, reward and link!");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/add-task', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description, rewardAmount: Number(rewardAmount), logoUrl, referLink })
+                });
+                const data = await res.json();
+                alert(data.message);
+                if(data.success) {
+                    document.getElementById('taskTitle').value = '';
+                    document.getElementById('taskDesc').value = '';
+                    document.getElementById('taskReward').value = '';
+                    document.getElementById('taskLogo').value = '';
+                    document.getElementById('taskLink').value = '';
+                    loadAdminTasks();
+                }
+            } catch(e) { alert("Error adding task!"); }
+        }
+
+        async function loadAdminTasks() {
+            try {
+                const res = await fetch('/api/tasks');
+                const tasks = await res.json();
+                const container = document.getElementById('adminTaskList');
+                container.innerHTML = '';
+                if(tasks.length === 0) {
+                    container.innerHTML = '<p>No live offers found.</p>';
+                    return;
+                }
+                tasks.forEach(task => {
+                    container.innerHTML += `
+                        <div class="admin-task-card">
+                            <div><b>${task.title}</b> (₹${task.rewardAmount})</div>
+                            <button class="btn btn-danger" onclick="deleteTask('${task._id}')">Delete</button>
+                        </div>
+                    `;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        async function deleteTask(id) {
+            if(!confirm("Are you sure you want to delete this offer?")) return;
+            try {
+                const res = await fetch(`/api/admin/delete-task/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                alert(data.message);
+                loadAdminTasks();
+            } catch(e) { alert("Error deleting task!"); }
+        }
+    </script>
+</body>
+</html>

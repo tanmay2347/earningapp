@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer Details - EarningApp</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+        .back-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .back-btn { background: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .top-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .top-logo { width: 60px; height: 60px; border-radius: 12px; object-fit: contain; background: #f8f9fa; }
+        
+        .instruction-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .step-item { display: flex; align-items: center; gap: 12px; margin: 15px 0; font-size: 15px; color: #444; font-weight: 500; }
+        .step-dot { width: 12px; height: 12px; background: #26a69a; border-radius: 50%; }
+        
+        .action-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; }
+        .install-now-btn {
+            width: 100%;
+            background: #00796b;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 121, 107, 0.4);
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="back-header">
+        <button class="back-btn" onclick="history.back()">←</button>
+        <div style="background: white; padding: 6px 14px; border-radius: 20px; font-weight: bold;">🪙 Wallet</div>
+    </div>
+
+    <div class="top-card">
+        <div>
+            <h2 id="taskTitle" style="margin:0 0 5px 0; font-size:20px;">Loading...</h2>
+            <p id="taskSubtitle" style="margin:0; color:#666; font-size:13px;"></p>
+            <div style="margin-top: 10px; background: #e0f2f1; color: #00796b; padding: 6px 12px; border-radius: 10px; display: inline-block; font-weight: bold;" id="taskReward">🪙 ₹0</div>
+        </div>
+        <img id="taskLogo" src="" alt="Logo" class="top-logo">
+    </div>
+
+    <div class="instruction-card">
+        <h3 style="margin-top:0;">Follow the instructions below:</h3>
+        <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
+        <div class="step-item"><div class="step-dot"></div><span>Install and Register using mobile number</span></div>
+        <div class="step-item"><div class="step-dot"></div><span>Complete required steps / KYC</span></div>
+        <div class="step-item"><div class="step-dot"></div><span>Reward Credits Instantly</span></div>
+    </div>
+
+    <!-- Sirf Install Now Button Rahega -->
+    <div class="action-bar">
+        <a id="proceedLink" href="#" target="_blank" class="install-now-btn">Install Now 🔗</a>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const title = urlParams.get('title');
+        const desc = urlParams.get('desc');
+        const reward = urlParams.get('reward');
+        const logo = urlParams.get('logo');
+        const link = urlParams.get('link');
+
+        document.getElementById('taskTitle').innerText = title;
+        document.getElementById('taskSubtitle').innerText = desc;
+        document.getElementById('taskReward').innerText = '🪙 ₹' + reward;
+        document.getElementById('taskLogo').src = logo;
+        document.getElementById('proceedLink').href = link;
+    </script>
+</body>
+</html>

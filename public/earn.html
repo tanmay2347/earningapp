@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earn - EarningApp</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding-bottom: 90px;
+        }
+
+        /* Top Header */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+        .back-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #111;
+        }
+        .back-btn {
+            background: white;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .top-wallet-box {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 6px 14px;
+            border-radius: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            font-weight: bold;
+            font-size: 15px;
+            gap: 6px;
+        }
+
+        /* Statistics Section */
+        .stats-container {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .stats-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 15px;
+        }
+        .stats-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .stat-card {
+            flex: 1;
+            background: white;
+            padding: 15px 10px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+        }
+        .stat-card h3 { margin: 0; font-size: 20px; color: #111; }
+        .stat-card p { margin: 5px 0 0 0; font-size: 12px; color: #666; font-weight: 600; }
+
+        /* Tabs (Offers / Status) */
+        .tabs-container {
+            display: flex;
+            background: white;
+            border-radius: 30px;
+            padding: 5px;
+            width: 90%;
+            max-width: 450px;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #555;
+            transition: 0.3s;
+        }
+        .tab-btn.active {
+            background: #26a69a;
+            color: white;
+            box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
+        }
+
+        /* Offers / Task List */
+        .task-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 0 16px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .task-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+            cursor: pointer;
+        }
+        .card-left { display: flex; align-items: center; gap: 14px; flex: 1; }
+        .task-logo { width: 45px; height: 45px; border-radius: 12px; object-fit: contain; background: #f8f9fa; }
+        .task-details h3 { margin: 0; font-size: 15px; color: #222; }
+        .reward {
+            background: #e0f2f1;
+            color: #00796b;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Bottom Floating Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 450px;
+            background: #00796b;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3);
+            z-index: 1000;
+        }
+        .nav-item {
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            font-size: 11px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="back-title">
+            <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+            Earn
+        </div>
+        <div class="top-wallet-box">
+            <span>🪙</span> <span id="walletBalance">₹0</span>
+        </div>
+    </header>
+
+    <!-- Statistics Section -->
+    <div class="stats-container">
+        <div class="stats-title">Statistics</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="statApproved">0</h3>
+                <p>Total Approved</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statPending">0</h3>
+                <p>Total Pending</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statRejected">0</h3>
+                <p>Total Rejected</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offers / Status Tabs -->
+    <div class="tabs-container">
+        <button class="tab-btn active" id="offersTabBtn" onclick="switchTab('offers')">Offers</button>
+        <button class="tab-btn" id="statusTabBtn" onclick="switchTab('status')">Status</button>
+    </div>
+
+    <!-- Content Area (Offers or Status list) -->
+    <main class="container" style="padding: 0 10px; max-width: 600px; margin: auto;">
+        <div id="earnContentList" class="task-grid">
+            <!-- Dynamic Data yahan aayega -->
+        </div>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
+        <a href="earn.html" class="nav-item active"><span>🪙</span><span>Earn</span></a>
+        <a onclick="openReferModal()" class="nav-item"><span>👥</span><span>Refer</span></a>
+        <a onclick="openWithdrawModal()" class="nav-item"><span>👛</span><span>Wallet</span></a>
+        <a href="terms.html" class="nav-item"><span>👤</span><span>Terms</span></a>
+    </nav>
+
+    <script>
+        const phone = localStorage.getItem('userPhone');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (phone) {
+                fetchWallet();
+                loadOffersTab();
+            }
+        });
+
+        async function fetchWallet() {
+            try {
+                const res = await fetch(`/api/user/wallet/${phone}`);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('walletBalance').innerText = '₹' + data.wallet;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function switchTab(tab) {
+            const offersBtn = document.getElementById('offersTabBtn');
+            const statusBtn = document.getElementById('statusTabBtn');
+
+            if (tab === 'offers') {
+                offersBtn.classList.add('active');
+                statusBtn.classList.remove('active');
+                loadOffersTab();
+            } else {
+                statusBtn.classList.add('active');
+                offersBtn.classList.remove('active');
+                loadStatusTab();
+            }
+        }
+
+        async function loadOffersTab() {
+            try {
+                const res = await fetch('/api/tasks');
+                const tasks = await res.json();
+                const container = document.getElementById('earnContentList');
+                container.innerHTML = '';
+
+                if (tasks.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#555;">No offers available.</p>';
+                    return;
+                }
+
+                tasks.forEach(task => {
+                    const card = document.createElement('div');
+                    card.className = 'task-card';
+                    card.onclick = () => {
+                        window.location.href = `task-details.html?title=${encodeURIComponent(task.title)}&desc=${encodeURIComponent(task.description)}&reward=${task.rewardAmount}&logo=${encodeURIComponent(task.logoUrl)}&link=${encodeURIComponent(task.referLink)}`;
+                    };
+                    card.innerHTML = `
+                        <div class="card-left">
+                            <img src="${task.logoUrl}" alt="Logo" class="task-logo" onerror="this.src='https://via.placeholder.com/50'">
+                            <div class="task-details">
+                                <h3>${task.title}</h3>
+                            </div>
+                        </div>
+                        <div class="reward">₹${task.rewardAmount}</div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadStatusTab() {
+            const container = document.getElementById('earnContentList');
+            container.innerHTML = '<p style="text-align:center; color:#555;">Loading status...</p>';
+            // Yahan aap apna status fetch karke dikha sakte hain
+            container.innerHTML = '<p style="text-align:center; color:#555;">No task status found.</p>';
+        }
+    </script>
+</body>
+</html>
