@@ -324,10 +324,13 @@
             </div>
         </div>
 
-        <!-- Header Gift Box & Wallet Box -->
+        <!-- Header Gift Box, Notification Bell & Wallet Box -->
         <div style="display: flex; align-items: center; gap: 8px;">
-            <div onclick="claimDailyBonus()" id="checkinBtn" title="Claim Daily Bonus" style="background: white; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 20px; transition: transform 0.2s;">
+            <div onclick="claimDailyBonus()" id="checkinBtn" title="Claim Daily Bonus" style="background: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 18px; transition: transform 0.2s;">
                 🎁
+            </div>
+            <div onclick="openNotificationModal()" title="Notifications" style="background: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 18px;">
+                🔔
             </div>
             <div class="top-wallet-box" onclick="openWithdrawModal()">
                 <span>🪙</span> <span id="walletBalance">₹0</span>
@@ -394,6 +397,17 @@
         </div>
     </div>
 
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeNotificationModal()">&times;</span>
+            <h3 style="margin-top: 0; color: #333;">🔔 Notifications & Alerts</h3>
+            <div id="notificationListContainer" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+                <p style="text-align:center; color:#777;">Loading notifications...</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         const userEmail = localStorage.getItem('userEmail');
         if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
@@ -454,6 +468,39 @@
                 console.error(err);
                 showToast("Server connection error!", "error");
                 btn.style.transform = 'scale(1)';
+            }
+        }
+
+        // Notification Modal Functions
+        function openNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'flex';
+            loadUserNotifications();
+        }
+        function closeNotificationModal() { document.getElementById('notificationModal').style.display = 'none'; }
+
+        async function loadUserNotifications() {
+            const container = document.getElementById('notificationListContainer');
+            container.innerHTML = '<p style="text-align:center; color:#777;">Loading...</p>';
+            try {
+                const res = await fetch(`/api/user/notifications/${userEmail}`);
+                const data = await res.json();
+                if (!data.success || data.notifications.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#777;">No notifications yet.</p>';
+                    return;
+                }
+
+                let html = '';
+                data.notifications.forEach(n => {
+                    html += `
+                        <div style="background: #f8f9fa; border-left: 4px solid #00796b; padding: 10px 14px; border-radius: 8px; margin-bottom: 10px; font-size: 13px;">
+                            <p style="margin: 0 0 5px 0; color: #333; font-weight: 500;">${n.message}</p>
+                            <small style="color: #888; font-size: 11px;">${n.createdAt}</small>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = '<p style="text-align:center; color:red;">Error loading notifications.</p>';
             }
         }
 

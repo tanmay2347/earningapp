@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     wallet: { type: Number, default: 0 },
     referredBy: { type: String, default: '' },
     referralBonusGiven: { type: Boolean, default: false },
-    lastCheckInDate: { type: String, default: '' } // Daily check-in tracking
+    lastCheckInDate: { type: String, default: '' }
 });
 const User = mongoose.model('User', userSchema);
 
@@ -59,6 +59,14 @@ const withdrawalSchema = new mongoose.Schema({
     status: { type: String, default: 'Pending' }
 });
 const Withdrawal = mongoose.model('Withdrawal', withdrawalSchema);
+
+// Notification Schema
+const notificationSchema = new mongoose.Schema({
+    userEmail: { type: String, required: true },
+    message: { type: String, required: true },
+    createdAt: { type: String, default: () => new Date().toLocaleString() }
+});
+const Notification = mongoose.model('Notification', notificationSchema);
 
 // --- DATABASE CONNECTION & ADMIN INITIALIZATION ---
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/earning-app')
@@ -166,7 +174,7 @@ app.get('/api/admin/withdrawals', async (req, res) => {
     }
 });
 
-// Approve & Pay Route
+// Approve & Pay Route (Notifications ke sath)
 app.post('/api/admin/approve/:id', async (req, res) => {
     try {
         const sub = await Submission.findById(req.params.id);
@@ -189,6 +197,12 @@ app.post('/api/admin/approve/:id', async (req, res) => {
         sub.status = 'Approved';
         await sub.save();
 
+        // 🔔 Notification create karna for Task Approval
+        await Notification.create({
+            userEmail: sub.userEmail,
+            message: `🎉 Great news! Your task "${sub.taskTitle}" has been Approved. ₹${sub.rewardAmount} credited to your wallet.`
+        });
+
         res.json({ success: true, message: "Task approved and reward credited to user wallet!" });
     } catch (err) {
         console.error("Approval error:", err);
@@ -196,7 +210,7 @@ app.post('/api/admin/approve/:id', async (req, res) => {
     }
 });
 
-// Reject Task Route
+// Reject Task Route (Notifications ke sath)
 app.post('/api/admin/reject/:id', async (req, res) => {
     try {
         const sub = await Submission.findById(req.params.id);
@@ -205,6 +219,13 @@ app.post('/api/admin/reject/:id', async (req, res) => {
         }
         sub.status = 'Rejected';
         await sub.save();
+
+        // 🔔 Notification create karna for Task Rejection
+        await Notification.create({
+            userEmail: sub.userEmail,
+            message: `❌ Your task submission for "${sub.taskTitle}" was Rejected by admin.`
+        });
+
         res.json({ success: true, message: "Task submission rejected successfully!" });
     } catch (err) {
         res.status(500).json({ success: false, message: "Error rejecting task" });
@@ -236,6 +257,13 @@ app.post('/api/admin/approve-withdraw/:id', async (req, res) => {
         }
         wd.status = 'Approved';
         await wd.save();
+
+        // 🔔 Notification create karna for Withdrawal Payout
+        await Notification.create({
+            userEmail: wd.userEmail,
+            message: `💸 Your withdrawal request of ₹${wd.amount} has been Processed & Paid successfully!`
+        });
+
         res.json({ success: true, message: "Withdrawal request marked as paid!" });
     } catch (err) {
         res.status(500).json({ success: false, message: "Error updating withdrawal" });
@@ -311,7 +339,7 @@ app.post('/api/admin/tasks/delete/:id', async (req, res) => {
     }
 });
 
-// --- 5. TASK SUBMISSIONS & SCREENSHOT PROOF (Duplicate Check ke sath) ---
+// --- 5. TASK SUBMISSIONS & SCREENSHOT PROOF ---
 app.post('/api/submit-task', async (req, res) => {
     try {
         const { userEmail, taskTitle, rewardAmount, proofImage } = req.body;
@@ -494,7 +522,6 @@ app.post('/api/user/daily-checkin', async (req, res) => {
             });
         }
 
-        // Random bonus: Jyadatar ₹1, kabhi-kabhi ₹2 se ₹5 tak
         let reward = 1;
         const rand = Math.random();
         if (rand > 0.85) reward = 5;
@@ -515,6 +542,17 @@ app.post('/api/user/daily-checkin', async (req, res) => {
     } catch (err) {
         console.error("Daily Check-in Error:", err);
         res.json({ success: false, message: "Error processing daily check-in" });
+    }
+});
+
+// --- 10. FETCH USER NOTIFICATIONS ROUTE ---
+app.get('/api/user/notifications/:email', async (req, res) => {
+    try {
+        const email = req.params.email.trim().toLowerCase();
+        const notifs = await Notification.find({ userEmail: email }).sort({ _id: -1 }).limit(10);
+        res.json({ success: true, notifications: notifs });
+    } catch (err) {
+        res.status(500).json({ success: false, error: "Server Error" });
     }
 });
 
