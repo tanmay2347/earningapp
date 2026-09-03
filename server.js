@@ -118,9 +118,6 @@ app.post('/api/login', async (req, res) => {
         let cleanEmail = email.trim().toLowerCase();
 
         if (cleanEmail === 'admin@earningapp.com') {
-            if (password !== 'adminpassword' && password !== '1234') { // Admin password check
-                // Agar pehli baar admin bina password ke bane ho to allow kar sakte hain, ya password match kare
-            }
             return res.json({ success: true, role: 'admin', message: "Admin login successful!" });
         }
 
@@ -313,11 +310,23 @@ app.post('/api/admin/tasks/delete/:id', async (req, res) => {
     }
 });
 
-// --- 5. TASK SUBMISSIONS & SCREENSHOT PROOF ---
+// --- 5. TASK SUBMISSIONS & SCREENSHOT PROOF (Duplicate Check ke sath) ---
 app.post('/api/submit-task', async (req, res) => {
     try {
         const { userEmail, taskTitle, rewardAmount, proofImage } = req.body;
         let email = userEmail.trim().toLowerCase();
+
+        let existingSubmission = await Submission.findOne({ 
+            userEmail: email, 
+            taskTitle: taskTitle 
+        });
+
+        if (existingSubmission) {
+            return res.json({ 
+                success: false, 
+                message: "You have already submitted this task! Duplicate submissions are not allowed." 
+            });
+        }
 
         const newSub = new Submission({ 
             userEmail: email, 
@@ -436,6 +445,29 @@ app.get('/api/user/referral-stats/:email', async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ error: "Server Error" });
+    }
+});
+
+// --- 8. UPDATE PASSWORD ROUTE ---
+app.post('/api/user/update-password', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.json({ success: false, message: "Email and new password are required!" });
+        }
+        
+        let user = await User.findOne({ email: email.trim().toLowerCase() });
+        if (!user) {
+            return res.json({ success: false, message: "User not found!" });
+        }
+
+        user.password = password;
+        await user.save();
+
+        res.json({ success: true, message: "Password updated successfully!" });
+    } catch (err) {
+        console.error("Update Password Error:", err);
+        res.json({ success: false, message: "Error updating password" });
     }
 });
 

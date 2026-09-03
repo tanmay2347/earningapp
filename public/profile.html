@@ -111,6 +111,22 @@
         .setting-left { display: flex; align-items: center; gap: 12px; }
         .setting-item span { color: #888; font-size: 18px; }
 
+        /* Password Change Card */
+        .password-card {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            margin: 15px auto;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .password-card h3 { margin-top: 0; font-size: 16px; color: #00796b; margin-bottom: 12px; }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
+        .btn-update { width: 100%; background: #00796b; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 5px; box-shadow: 0 3px 10px rgba(0,121,107,0.3); }
+
         /* Bottom Floating Navigation */
         .bottom-nav {
             position: fixed;
@@ -181,6 +197,16 @@
         </div>
     </div>
 
+    <!-- Security / Password Change Card -->
+    <div class="password-card">
+        <h3>🔒 Security Settings</h3>
+        <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="newPassword" placeholder="Enter new password">
+        </div>
+        <button class="btn-update" onclick="updatePassword()">Update Password</button>
+    </div>
+
     <!-- Settings List -->
     <div class="settings-section">
         <h2>Settings</h2>
@@ -188,11 +214,6 @@
         <div class="setting-item" onclick="alert('Thank you for rating us!')">
             <div class="setting-left">⭐ Rate Us</div>
             <span>➔</span>
-        </div>
-
-        <div class="setting-item">
-            <div class="setting-left">📍 Location</div>
-            <span style="font-size: 13px; background: #e0f2f1; padding: 4px 10px; border-radius: 10px; color: #00796b;"></span>
         </div>
 
         <a href="https://t.me/earning_app_247_bot" target="_blank" class="setting-item">
@@ -221,7 +242,6 @@
     </nav>
 
     <script>
-        // Email-based Authentication Check
         const userEmail = localStorage.getItem('userEmail');
         if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
             window.location.href = 'login.html';
@@ -244,6 +264,29 @@
                     document.getElementById('totalEarnedVal').innerText = '₹' + data.wallet;
                 }
             } catch (err) { console.error(err); }
+        }
+
+        async function updatePassword() {
+            const newPassword = document.getElementById('newPassword').value.trim();
+            if (!newPassword || newPassword.length < 4) {
+                alert("Password must be at least 4 characters long!");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/user/update-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, password: newPassword })
+                });
+                const data = await res.json();
+                alert(data.message);
+                if (data.success) {
+                    document.getElementById('newPassword').value = '';
+                }
+            } catch (err) {
+                alert("Error updating password!");
+            }
         }
 
         function logoutUser() {
