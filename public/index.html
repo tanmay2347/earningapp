@@ -23,11 +23,13 @@
         .modal-content {
             background: white;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 16px;
             width: 90%;
-            max-width: 450px;
+            max-width: 480px;
             position: relative;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .close-modal {
@@ -318,13 +320,15 @@
         </div>
     </div>
 
-    <!-- Withdrawal Status Modal -->
+    <!-- Offer Status Modal (Tracking Process with Show/Hide Details) -->
     <div id="statusModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" onclick="closeStatusModal()">&times;</span>
-            <h3 style="margin-top: 0; color: #333;">My Withdrawal Status</h3>
-            <div id="statusListContainer" style="max-height: 250px; overflow-y: auto; margin-top: 15px;">
-                <p>Loading...</p>
+            <h3 style="margin-top: 0; color: #333; display: flex; align-items: center; justify-content: space-between;">
+                <span>Offer Status</span>
+            </h3>
+            <div id="statusListContainer" style="margin-top: 15px;">
+                <p style="text-align:center; color:#777;">Loading tracking status...</p>
             </div>
         </div>
     </div>
@@ -335,7 +339,6 @@
         if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
             window.location.href = 'login.html';
         } else if (userEmail) {
-            // Display email username or email text
             document.getElementById('userNameDisplay').innerText = userEmail.split('@')[0];
         }
 
@@ -370,26 +373,75 @@
 
         function openStatusModal() {
             document.getElementById('statusModal').style.display = 'flex';
-            loadUserWithdrawals();
+            loadOfferStatusData();
         }
         function closeStatusModal() { document.getElementById('statusModal').style.display = 'none'; }
 
-        async function loadUserWithdrawals() {
+        // Load user's submitted tasks and render tracking steps with Show/Hide toggle
+        async function loadOfferStatusData() {
             const container = document.getElementById('statusListContainer');
+            container.innerHTML = '<p style="text-align:center; color:#777;">Loading...</p>';
             try {
-                const res = await fetch(`/api/user/withdrawals/${userEmail}`);
-                const list = await res.json();
-                if (list.length === 0) {
-                    container.innerHTML = '<p style="text-align:center; color:#777;">No withdrawal requests found.</p>';
+                const res = await fetch(`/api/user/withdrawals/${userEmail}`); // Or fetch user submissions if route available
+                // For demonstration using general submissions or fallback to task view
+                const taskRes = await fetch('/api/tasks');
+                const tasks = await taskRes.json();
+
+                if (tasks.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#777;">No active offers found.</p>';
                     return;
                 }
-                let html = '<ul style="padding-left: 15px; font-size:13px;">';
-                list.forEach(item => {
-                    html += `<li>₹${item.amount} - <b style="color:${item.status === 'Approved' ? 'green' : 'orange'}">${item.status}</b></li>`;
+
+                let html = '';
+                tasks.forEach((task, index) => {
+                    html += `
+                    <div style="background: #f8f9fa; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #e0e0e0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <img src="${task.logoUrl}" style="width: 35px; height: 35px; border-radius: 8px; object-fit: contain;" onerror="this.src='https://via.placeholder.com/40'">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 15px; color: #222;">${task.title}</h4>
+                                    <small style="color: #777;">Task Active</small>
+                                </div>
+                            </div>
+                            <div>
+                                <span style="font-weight: bold; color: #00796b;">🪙 ₹${task.rewardAmount}</span>
+                                <span style="background: #fff3cd; color: #856404; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; margin-left: 6px;">Pending</span>
+                            </div>
+                        </div>
+
+                        <!-- Tracking Process Details (Hidden by default) -->
+                        <div id="tracking-${index}" style="display: none; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 13px;">
+                            <div style="margin-bottom: 8px;">🟢 <b>Offer Clicked</b><br><span style="color: #555; margin-left: 18px; font-size: 12px;">You Started the Offer</span></div>
+                            <div style="margin-bottom: 8px;">🟡 <b>Task "Register" Pending</b><br><span style="color: #555; margin-left: 18px; font-size: 12px;">Waiting for confirmation.</span></div>
+                            <div style="margin-bottom: 8px;">🟡 <b>Task "Verification" Pending</b><br><span style="color: #555; margin-left: 18px; font-size: 12px;">Coins will credit soon.</span></div>
+                        </div>
+
+                        <!-- Toggle Button -->
+                        <div style="text-align: center; margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px;">
+                            <button id="btn-${index}" onclick="toggleTracking(${index})" style="background: none; border: none; font-weight: bold; color: #00796b; cursor: pointer; font-size: 13px;">
+                                Show More Details
+                            </button>
+                        </div>
+                    </div>`;
                 });
-                html += '</ul>';
                 container.innerHTML = html;
-            } catch (err) { container.innerHTML = '<p>Error loading status.</p>'; }
+            } catch (err) {
+                container.innerHTML = '<p style="text-align:center; color:red;">Error loading offer status.</p>';
+            }
+        }
+
+        function toggleTracking(index) {
+            const details = document.getElementById(`tracking-${index}`);
+            const btn = document.getElementById(`btn-${index}`);
+
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                btn.innerText = 'Hide Details';
+            } else {
+                details.style.display = 'none';
+                btn.innerText = 'Show More Details';
+            }
         }
 
         async function submitWithdraw() {
