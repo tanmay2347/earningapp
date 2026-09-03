@@ -46,7 +46,6 @@
             cursor: pointer;
         }
 
-        /* Share Buttons Container (Circular Share Icon + WhatsApp Button) */
         .share-buttons-container {
             width: 90%;
             max-width: 450px;
@@ -88,7 +87,6 @@
             text-align: center;
         }
 
-        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #00796b; border-radius: 30px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3); }
         .nav-item { color: rgba(255,255,255,0.7); text-align: center; font-size: 11px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .nav-item.active { background: rgba(255, 255, 255, 0.2); padding: 6px 16px; border-radius: 20px; color: white; font-weight: bold; }
@@ -130,7 +128,7 @@
         <b id="totalRef" style="font-size: 18px; color: #00796b;">0</b>
     </div>
 
-    <!-- Share Buttons Container (Circular Share Icon + WhatsApp Button) -->
+    <!-- Share Buttons Container -->
     <div class="share-buttons-container">
         <button class="native-share-btn" onclick="shareGeneral()" title="Share">🔗</button>
         <button class="whatsapp-share-btn" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
@@ -185,7 +183,7 @@
         }
 
         function shareWhatsApp() {
-            const message = `Join EarningApp and start earning rewards! 🐱💵\n\n` +
+            const message = `Join EarningApp and start earning rewards! 🚀\n\n` +
                 `• Complete tasks and earn real money.\n` +
                 `• Refer friends and earn rewards.\n\n` +
                 `Use my referral code: *${userReferCode}*\n\n` +
@@ -196,24 +194,31 @@
         }
 
         async function shareGeneral() {
-            const message = `Join EarningApp and start earning rewards! 🐱💵\n\n` +
+            const message = `Join EarningApp and start earning rewards! 🚀\n\n` +
                 `• Complete tasks and earn real money.\n` +
                 `• Refer friends and earn rewards.\n\n` +
                 `Use my referral code: ${userReferCode}\n\n` +
                 `👉 Download now: ${refLink}`;
 
+            // Pehle native share try karenge
             if (navigator.share) {
                 try {
                     await navigator.share({
                         title: 'EarningApp Referral',
                         text: message,
                     });
+                    return;
                 } catch (err) {
-                    console.log('Error sharing:', err);
+                    console.log('Share dismissed or failed', err);
                 }
+            } 
+            
+            // Agar phone par share support nahi kiya, toh options dikhayenge ya copy kar lenge
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(message);
+                alert("Referral message & link copied to clipboard! You can now paste it anywhere.");
             } else {
                 copyCode();
-                alert("Sharing not supported on this browser. Referral code copied instead!");
             }
         }
     </script>
