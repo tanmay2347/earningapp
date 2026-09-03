@@ -3,133 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - EarningApp</title>
+    <title>Professional Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
-        .admin-container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { color: #00796b; margin-top: 0; }
+        body { background: #f8f9fa; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .admin-header { background: #1e1e2d; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .admin-header h2 { margin: 0; font-size: 22px; }
+        .logout-admin { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .dashboard-container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid #007bff; }
+        .stat-card h3 { margin: 0 0 10px 0; font-size: 14px; color: #6c757d; text-transform: uppercase; }
+        .stat-card p { margin: 0; font-size: 24px; font-weight: bold; color: #333; }
+        .admin-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .admin-card h3 { margin-top: 0; color: #333; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        .btn { background: #00796b; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
-        .btn-danger { background: #dc3545; padding: 6px 12px; width: auto; font-size: 12px; }
-        .task-list-admin { margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; }
-        .admin-task-card { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; }
+        .form-group.full { grid-column: span 2; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #495057; font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .form-group textarea { height: 80px; resize: vertical; }
+        .btn-primary { background: #28a745; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        .task-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .task-table th, .task-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #dee2e6; font-size: 14px; }
+        .task-table th { background: #f1f3f5; color: #495057; font-weight: 600; }
+        .action-btn { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .edit-btn { background: #ffc107; color: black; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px; }
+        .approve-btn { background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <h2>🛠️ Admin Dashboard - Add New Offer</h2>
-        
-        <div class="form-group">
-            <label>App / Task Title (e.g. Groww)</label>
-            <input type="text" id="taskTitle" placeholder="Enter app name">
+    <header class="admin-header">
+        <h2>🛡️ EarningApp - Professional Admin Panel</h2>
+        <div>
+            <a href="index.html" style="color: white; text-decoration: none; margin-right: 20px; font-size: 14px;">🌐 View Website</a>
+            <button class="logout-admin" onclick="adminLogout()">Logout</button>
         </div>
-        
-        <div class="form-group">
-            <label>Reward Amount (₹)</label>
-            <input type="number" id="taskReward" placeholder="Enter reward amount">
-        </div>
-        
-        <div class="form-group">
-            <label>Logo Image URL (Base64 or Image Link)</label>
-            <input type="text" id="taskLogo" placeholder="Paste image link or code">
-        </div>
-        
-        <div class="form-group">
-            <label>Referral / Affiliate Link</label>
-            <input type="text" id="taskLink" placeholder="https://tracking-link.com">
+    </header>
+
+    <div class="dashboard-container">
+        <div class="stats-grid">
+            <div class="stat-card" style="border-color: #007bff;">
+                <h3>Total Active Offers</h3>
+                <p id="totalTasksCount">0</p>
+            </div>
+            <div class="stat-card" style="border-color: #28a745;">
+                <h3>Admin Wallet Balance</h3>
+                <p id="adminWalletBalance" style="color: #28a745;">₹0</p>
+            </div>
         </div>
 
-        <button class="btn" onclick="addNewTask()">Publish Offer to Customer Page</button>
-
-        <div class="task-list-admin">
-            <h3>Live Offers on Customer App</h3>
-            <div id="adminTaskList">Loading...</div>
+        <!-- Add / Edit Offer Form -->
+        <div class="admin-card">
+            <h3 id="formHeading">Add New Earning Offer (Task)</h3>
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+                <div class="form-grid">
+                    <div class="form-group"><label>Offer Title</label><input type="text" id="title" placeholder="e.g., Angle One" required></div>
+                    <div class="form-group"><label>Reward Amount (₹)</label><input type="number" id="rewardAmount" placeholder="e.g., 300" required></div>
+                    <div class="form-group full"><label>Logo Image URL</label><input type="text" id="logoUrl" placeholder="https://..." required></div>
+                    <div class="form-group full"><label>Referral Link</label><input type="text" id="referLink" placeholder="https://..." required></div>
+                    <div class="form-group full"><label>Description</label><textarea id="description" placeholder="Instructions..." required></textarea></div>
+                </div>
+                <button type="submit" class="btn-primary" id="submitBtn">Publish Offer</button>
+                <button type="button" id="cancelEditBtn" style="display:none; background:#6c757d; color:white; border:none; padding:10px; width:100%; margin-top:5px; border-radius:4px; cursor:pointer;" onclick="resetForm()">Cancel Edit</button>
+            </form>
+            <p id="msg" style="color: green; margin-top: 10px; font-weight: bold; text-align: center;"></p>
         </div>
 
-        <button onclick="localStorage.clear(); window.location.href='login.html';" style="background:#333; color:white; border:none; padding:10px; width:100%; border-radius:8px; margin-top:20px; cursor:pointer;">Logout Admin</button>
+        <!-- Manage Offers Table -->
+        <div class="admin-card">
+            <h3>Manage, Edit & Delete Offers</h3>
+            <table class="task-table">
+                <thead><tr><th>Title</th><th>Reward</th><th>Action</th></tr></thead>
+                <tbody id="adminTaskList"></tbody>
+            </table>
+        </div>
+
+        <!-- Customer Task Submissions Table -->
+        <div class="admin-card">
+            <h3>Customer Task Submissions & Payouts</h3>
+            <table class="task-table">
+                <thead><tr><th>User Email</th><th>Task Name</th><th>Reward</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="submissionList"></tbody>
+            </table>
+        </div>
+
+        <!-- Customer Withdrawal Requests Table -->
+        <div class="admin-card">
+            <h3>Customer Withdrawal Requests</h3>
+            <table class="task-table">
+                <thead><tr><th>User Email</th><th>Amount</th><th>Bank / UPI Details</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="withdrawalList"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // Security Check: Sirf admin@earningapp.com hi yeh page khol sakega
         const userEmail = localStorage.getItem('userEmail');
         if (!userEmail || userEmail.toLowerCase() !== 'admin@earningapp.com') {
             window.location.href = 'login.html';
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            loadAdminTasks();
-        });
-
-        async function addNewTask() {
-            const title = document.getElementById('taskTitle').value.trim();
-            const rewardAmount = document.getElementById('taskReward').value.trim();
-            const logoUrl = document.getElementById('taskLogo').value.trim();
-            const referLink = document.getElementById('taskLink').value.trim();
-
-            if(!title || !rewardAmount || !referLink) {
-                alert("Please fill title, reward and link!");
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/admin/tasks', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        title, 
-                        description: 'Complete task & earn reward', 
-                        rewardAmount: Number(rewardAmount), 
-                        logoUrl: logoUrl || 'https://via.placeholder.com/50', 
-                        referLink 
-                    })
-                });
-                const data = await res.json();
-                alert(data.message || "Offer published successfully!");
-                if(data.success) {
-                    document.getElementById('taskTitle').value = '';
-                    document.getElementById('taskReward').value = '';
-                    document.getElementById('taskLogo').value = '';
-                    document.getElementById('taskLink').value = '';
-                    loadAdminTasks();
-                }
-            } catch(e) { 
-                alert("Error adding task!"); 
-            }
+        function adminLogout() { 
+            localStorage.clear(); 
+            window.location.href = 'login.html'; 
         }
 
-        async function loadAdminTasks() {
+        async function loadAdminData() {
             try {
-                const res = await fetch('/api/tasks');
-                const tasks = await res.json();
-                const container = document.getElementById('adminTaskList');
-                container.innerHTML = '';
-                if(tasks.length === 0) {
-                    container.innerHTML = '<p>No live offers found.</p>';
-                    return;
+                let wRes = await fetch('/api/admin/wallet');
+                let wData = await wRes.json();
+                document.getElementById('adminWalletBalance').innerText = '₹' + wData.wallet;
+
+                let tasks = await (await fetch('/api/tasks')).json();
+                let tbody = document.getElementById('adminTaskList');
+                tbody.innerHTML = '';
+                document.getElementById('totalTasksCount').innerText = tasks.length;
+                
+                if (tasks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No offers available.</td></tr>';
+                } else {
+                    tasks.forEach(task => {
+                        tbody.innerHTML += `<tr>
+                            <td><strong>${task.title}</strong></td>
+                            <td style="color: green; font-weight: bold;">₹${task.rewardAmount}</td>
+                            <td>
+                                <button class="edit-btn" onclick="prepareEdit('${task._id}', '${task.title}', '${task.rewardAmount}', '${task.logoUrl}', '${task.referLink}', \`${task.description}\`)">Edit</button>
+                                <button class="action-btn" onclick="deleteTask('${task._id}')">Delete</button>
+                            </td>
+                        </tr>`;
+                    });
                 }
-                tasks.forEach(task => {
-                    container.innerHTML += `
-                        <div class="admin-task-card">
-                            <div><b>${task.title}</b> (₹${task.rewardAmount})</div>
-                            <button class="btn btn-danger" onclick="deleteTask('${task._id}')">Delete</button>
-                        </div>
-                    `;
-                });
-            } catch(e) { console.error(e); }
+
+                // Load Task Submissions
+                let subs = await (await fetch('/api/admin/submissions')).json();
+                let subTbody = document.getElementById('submissionList');
+                subTbody.innerHTML = '';
+                if (subs.length === 0) {
+                    subTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No task submissions yet.</td></tr>';
+                } else {
+                    subs.forEach(sub => {
+                        subTbody.innerHTML += `<tr>
+                            <td>${sub.userEmail || sub.userPhone}</td>
+                            <td>${sub.taskTitle}</td>
+                            <td>₹${sub.rewardAmount}</td>
+                            <td style="font-weight:bold; color:${sub.status==='Approved'?'green':'orange'}">${sub.status}</td>
+                            <td>${sub.status==='Pending'? `<button class="approve-btn" onclick="paySub('${sub._id}')">Pay Wallet</button>` : '<span style="color:green; font-weight:bold;">Paid to Wallet</span>'}</td>
+                        </tr>`;
+                    });
+                }
+
+                // Load Withdrawal Requests
+                let wdRes = await fetch('/api/admin/withdrawals');
+                let wds = await wdRes.json();
+                let wdTbody = document.getElementById('withdrawalList');
+                wdTbody.innerHTML = '';
+                if (wds.length === 0) {
+                    wdTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No withdrawal requests yet.</td></tr>';
+                } else {
+                    wds.forEach(wd => {
+                        wdTbody.innerHTML += `<tr>
+                            <td>${wd.userEmail || wd.userPhone}</td>
+                            <td>₹${wd.amount}</td>
+                            <td>${wd.accountDetails}</td>
+                            <td style="font-weight:bold; color:${wd.status==='Approved'?'green':'orange'}">${wd.status}</td>
+                            <td>${wd.status==='Pending'? `<button class="approve-btn" onclick="payWithdraw('${wd._id}')">Approve Payout</button>` : '<span style="color:green; font-weight:bold;">Paid</span>'}</td>
+                        </tr>`;
+                    });
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function prepareEdit(id, title, reward, logo, link, desc) {
+            document.getElementById('taskId').value = id;
+            document.getElementById('title').value = title;
+            document.getElementById('rewardAmount').value = reward;
+            document.getElementById('logoUrl').value = logo;
+            document.getElementById('referLink').value = link;
+            document.getElementById('description').value = desc;
+
+            document.getElementById('formHeading').innerText = "Edit Offer Details";
+            document.getElementById('submitBtn').innerText = "Update Offer";
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            document.getElementById('formHeading').innerText = "Add New Earning Offer (Task)";
+            document.getElementById('submitBtn').innerText = "Publish Offer";
+            document.getElementById('cancelEditBtn').style.display = 'none';
         }
 
         async function deleteTask(id) {
-            if(!confirm("Are you sure you want to delete this offer?")) return;
-            try {
-                const res = await fetch(`/api/admin/tasks/delete/${id}`, { method: 'DELETE' });
-                const data = await res.json();
-                alert(data.message || "Deleted!");
-                loadAdminTasks();
-            } catch(e) { alert("Error deleting task!"); }
+            if (confirm("Are you sure you want to delete this offer?")) {
+                try {
+                    let res = await fetch('/api/admin/tasks/delete/' + id, { method: 'DELETE' });
+                    let data = await res.json();
+                    if(data.success) {
+                        alert("Offer deleted successfully!");
+                        loadAdminData();
+                    } else {
+                        alert("Failed to delete task.");
+                    }
+                } catch(e) {
+                    alert("Error connecting to server.");
+                }
+            }
         }
+
+        async function paySub(id) {
+            if (confirm("Send payment from Admin Wallet to Customer Wallet?")) {
+                let res = await fetch('/api/admin/approve/' + id, { method: 'POST' });
+                let data = await res.json();
+                alert(data.message);
+                loadAdminData();
+            }
+        }
+
+        async function payWithdraw(id) {
+            if (confirm("Mark this withdrawal request as processed/paid?")) {
+                let res = await fetch('/api/admin/approve-withdraw/' + id, { method: 'POST' });
+                let data = await res.json();
+                alert(data.message);
+                loadAdminData();
+            }
+        }
+
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let id = document.getElementById('taskId').value;
+            let payload = {
+                title: document.getElementById('title').value,
+                rewardAmount: document.getElementById('rewardAmount').value,
+                logoUrl: document.getElementById('logoUrl').value,
+                referLink: document.getElementById('referLink').value,
+                description: document.getElementById('description').value
+            };
+
+            let url = id ? '/api/admin/tasks/update/' + id : '/api/admin/tasks';
+            let res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if ((await res.json()).success) {
+                document.getElementById('msg').innerText = id ? "Offer updated successfully!" : "Offer published successfully!";
+                resetForm();
+                loadAdminData();
+                setTimeout(() => { document.getElementById('msg').innerText = ''; }, 3000);
+            }
+        });
+
+        window.onload = loadAdminData;
     </script>
 </body>
 </html>
