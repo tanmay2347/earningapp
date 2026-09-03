@@ -85,7 +85,7 @@
         <p style="font-size: 13px; color: #666;">Copy referral link and share it with your friends</p>
         
         <div class="copy-box">
-            <span id="refLinkText" style="font-size: 13px; color: #333; overflow: hidden; text-overflow: ellipsis;">Loading...</span>
+            <span id="refLinkText" style="font-size: 13px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 250px;">Loading...</span>
             <button class="copy-btn" onclick="copyLink()">Copy</button>
         </div>
     </div>
@@ -116,21 +116,26 @@
     </nav>
 
     <script>
-        const phone = localStorage.getItem('userPhone');
-        const refLink = `${window.location.origin}/login.html?ref=${phone}`;
+        // Email-based Authentication Check
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        const refLink = `${window.location.origin}/login.html?ref=${userEmail}`;
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('refLinkText').innerText = refLink;
-            if(phone) loadReferStats();
+            if(userEmail) loadReferStats();
         });
 
         async function loadReferStats() {
             try {
-                const res = await fetch(`/api/user/referral-stats/${phone}`);
+                const res = await fetch(`/api/user/referral-stats/${userEmail}`);
                 const data = await res.json();
                 if(data.success) {
                     document.getElementById('totalRef').innerText = data.totalInvites;
-                    document.getElementById('topBalance').innerText = data.wallet || '0.00';
+                    document.getElementById('topBalance').innerText = data.totalEarnings || '0.00';
                 }
             } catch(e) { console.error(e); }
         }

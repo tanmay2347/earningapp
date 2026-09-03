@@ -224,16 +224,20 @@
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
         <a href="earn.html" class="nav-item active"><span>🪙</span><span>Earn</span></a>
-        <a onclick="openReferModal()" class="nav-item"><span>👥</span><span>Refer</span></a>
-        <a onclick="openWithdrawModal()" class="nav-item"><span>👛</span><span>Wallet</span></a>
-        <a href="terms.html" class="nav-item"><span>👤</span><span>Terms</span></a>
+        <a href="refer.html" class="nav-item"><span>👥</span><span>Refer</span></a>
+        <a href="wallet.html" class="nav-item"><span>👛</span><span>Wallet</span></a>
+        <a href="profile.html" class="nav-item"><span>👤</span><span>Profile</span></a>
     </nav>
 
     <script>
-        const phone = localStorage.getItem('userPhone');
+        // Email-based Authentication check
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
-            if (phone) {
+            if (userEmail) {
                 fetchWallet();
                 loadOffersTab();
             }
@@ -241,7 +245,7 @@
 
         async function fetchWallet() {
             try {
-                const res = await fetch(`/api/user/wallet/${phone}`);
+                const res = await fetch(`/api/user/wallet/${userEmail}`);
                 const data = await res.json();
                 if (data.success) {
                     document.getElementById('walletBalance').innerText = '₹' + data.wallet;
@@ -299,8 +303,22 @@
         async function loadStatusTab() {
             const container = document.getElementById('earnContentList');
             container.innerHTML = '<p style="text-align:center; color:#555;">Loading status...</p>';
-            // Yahan aap apna status fetch karke dikha sakte hain
-            container.innerHTML = '<p style="text-align:center; color:#555;">No task status found.</p>';
+            try {
+                const res = await fetch(`/api/user/withdrawals/${userEmail}`);
+                const list = await res.json();
+                if (list.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#555;">No task status found.</p>';
+                    return;
+                }
+                let html = '';
+                list.forEach(item => {
+                    html += `<div class="task-card">
+                        <div><b>₹${item.amount}</b><br><small>${item.accountDetails}</small></div>
+                        <span style="font-weight:bold; color:${item.status === 'Approved' ? 'green' : 'orange'}">${item.status}</span>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            } catch (err) { container.innerHTML = '<p style="text-align:center; color:#555;">Error loading status.</p>'; }
         }
     </script>
 </body>

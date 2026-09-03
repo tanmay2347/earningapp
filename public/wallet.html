@@ -76,6 +76,21 @@
         .history-list { width: 90%; max-width: 450px; margin: auto; display: flex; flex-direction: column; gap: 10px; }
         .history-card { background: white; border-radius: 16px; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
 
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .close-modal { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 22px; font-weight: bold; color: #555; }
+
         /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #00796b; border-radius: 30px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3); }
         .nav-item { color: rgba(255,255,255,0.7); text-align: center; font-size: 11px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -110,6 +125,24 @@
         <p style="text-align:center; color:#555;">Loading history...</p>
     </main>
 
+    <!-- Withdrawal Popup Modal -->
+    <div id="withdrawModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeWithdrawModal()">&times;</span>
+            <h3 style="margin-top: 0; color: #333;">Withdraw Funds</h3>
+            <p style="background: #fff3cd; color: #856404; padding: 8px; border-radius: 4px; font-size: 12px; margin-bottom: 15px;">⚠️ 5% commission on withdrawal.</p>
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">UPI ID / Bank Details</label>
+                <input type="text" id="upiId" placeholder="e.g. mobile@paytm" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; box-sizing:border-box;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">Amount (₹)</label>
+                <input type="number" id="upiAmount" placeholder="Enter amount" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; box-sizing:border-box;">
+            </div>
+            <button onclick="submitWithdraw()" style="width:100%; background:#28a745; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold;">Withdraw Now</button>
+        </div>
+    </div>
+
     <!-- Bottom Nav -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
@@ -120,12 +153,17 @@
     </nav>
 
     <script>
-        const phone = localStorage.getItem('userPhone');
-        window.addEventListener('DOMContentLoaded', () => { if(phone) loadWalletData(); });
+        // Email-based Authentication Check
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => { if(userEmail) loadWalletData(); });
 
         async function loadWalletData() {
             try {
-                const res = await fetch(`/api/user/wallet/${phone}`);
+                const res = await fetch(`/api/user/wallet/${userEmail}`);
                 const data = await res.json();
                 if(data.success) {
                     document.getElementById('totalBalance').innerText = '₹' + data.wallet;
@@ -135,9 +173,9 @@
             } catch(e) { console.error(e); }
         }
 
-        async function loadEarnings() {
+        function loadEarnings() {
             const container = document.getElementById('historyContainer');
-            container.innerHTML = '<p style="text-align:center; color:#555;">No earnings yet.</p>';
+            container.innerHTML = '<p style="text-align:center; color:#555;">No earnings history available.</p>';
         }
 
         function switchTab(type) {
@@ -155,7 +193,7 @@
         async function loadRedeems() {
             const container = document.getElementById('historyContainer');
             try {
-                const res = await fetch(`/api/user/withdrawals/${phone}`);
+                const res = await fetch(`/api/user/withdrawals/${userEmail}`);
                 const list = await res.json();
                 if(list.length === 0) {
                     container.innerHTML = '<p style="text-align:center; color:#555;">No redeems found.</p>';
@@ -172,9 +210,28 @@
             } catch(e) { container.innerHTML = '<p>Error loading redeems.</p>'; }
         }
 
-        function openWithdrawModal() {
-            // Aap withdraw modal ya direct action yahan rakh sakte hain
-            alert("Withdrawal feature active!");
+        function openWithdrawModal() { document.getElementById('withdrawModal').style.display = 'flex'; }
+        function closeWithdrawModal() { document.getElementById('withdrawModal').style.display = 'none'; }
+
+        async function submitWithdraw() {
+            const upiId = document.getElementById('upiId').value.trim();
+            const amount = document.getElementById('upiAmount').value.trim();
+            if (!upiId || !amount) { alert("Fill all details!"); return; }
+
+            try {
+                const res = await fetch('/api/withdraw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userEmail: userEmail, amount: Number(amount), accountDetails: upiId })
+                });
+                const data = await res.json();
+                alert(data.message);
+                if (data.success) { 
+                    closeWithdrawModal(); 
+                    loadWalletData(); 
+                    switchTab('redeems');
+                }
+            } catch (err) { alert("Server error!"); }
         }
     </script>
 </body>

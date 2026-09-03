@@ -75,17 +75,22 @@
     <div class="instruction-card">
         <h3 style="margin-top:0;">Follow the instructions below:</h3>
         <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
-        <div class="step-item"><div class="step-dot"></div><span>Install and Register using mobile number</span></div>
+        <div class="step-item"><div class="step-dot"></div><span>Install and Register using email/mobile</span></div>
         <div class="step-item"><div class="step-dot"></div><span>Complete required steps / KYC</span></div>
-        <div class="step-item"><div class="step-dot"></div><span>Reward Credits Instantly</span></div>
+        <div class="step-item"><div class="step-dot"></div><span>Submit for verification</span></div>
     </div>
 
-    <!-- Sirf Install Now Button Rahega -->
     <div class="action-bar">
-        <a id="proceedLink" href="#" target="_blank" class="install-now-btn">Install Now 🔗</a>
+        <button onclick="handleTaskAction()" class="install-now-btn">Install Now & Submit 🔗</button>
     </div>
 
     <script>
+        // Email-based Authentication Check
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const title = urlParams.get('title');
         const desc = urlParams.get('desc');
@@ -93,11 +98,35 @@
         const logo = urlParams.get('logo');
         const link = urlParams.get('link');
 
-        document.getElementById('taskTitle').innerText = title;
-        document.getElementById('taskSubtitle').innerText = desc;
-        document.getElementById('taskReward').innerText = '🪙 ₹' + reward;
-        document.getElementById('taskLogo').src = logo;
-        document.getElementById('proceedLink').href = link;
+        document.getElementById('taskTitle').innerText = title || 'Task Offer';
+        document.getElementById('taskSubtitle').innerText = desc || 'Complete this task to earn reward';
+        document.getElementById('taskReward').innerText = '🪙 ₹' + (reward || 0);
+        document.getElementById('taskLogo').src = logo || 'https://via.placeholder.com/60';
+
+        async function handleTaskAction() {
+            if (!link) {
+                alert("Invalid tracking link!");
+                return;
+            }
+
+            try {
+                // Backend par task submission bhejenge taaki admin approve kar sake aur refer bonus mil sake
+                await fetch('/api/submit-task', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userEmail: userEmail,
+                        taskTitle: title,
+                        rewardAmount: Number(reward)
+                    })
+                });
+            } catch (err) {
+                console.error("Submission error:", err);
+            }
+
+            // Affiliate / Refer link par user ko redirect kar dena
+            window.open(link, '_blank');
+        }
     </script>
 </body>
 </html>

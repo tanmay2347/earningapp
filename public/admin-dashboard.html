@@ -85,24 +85,32 @@
         <div class="admin-card">
             <h3>Customer Task Submissions & Payouts</h3>
             <table class="task-table">
-                <thead><tr><th>User Phone</th><th>Task Name</th><th>Reward</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>User Email</th><th>Task Name</th><th>Reward</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody id="submissionList"></tbody>
             </table>
         </div>
 
-        <!-- Customer Withdrawal Requests Table (ALAG TABLE) -->
+        <!-- Customer Withdrawal Requests Table -->
         <div class="admin-card">
             <h3>Customer Withdrawal Requests</h3>
             <table class="task-table">
-                <thead><tr><th>User Phone</th><th>Amount</th><th>Bank / UPI Details</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>User Email</th><th>Amount</th><th>Bank / UPI Details</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody id="withdrawalList"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        if (localStorage.getItem('isAdmin') !== 'true') window.location.href = 'login.html';
-        function adminLogout() { localStorage.removeItem('isAdmin'); window.location.href = 'login.html'; }
+        // Email-based Admin Authentication Security Check
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail || userEmail.toLowerCase() !== 'admin@earningapp.com') {
+            window.location.href = 'login.html';
+        }
+
+        function adminLogout() { 
+            localStorage.clear(); 
+            window.location.href = 'login.html'; 
+        }
 
         async function loadAdminData() {
             try {
@@ -139,7 +147,7 @@
                 } else {
                     subs.forEach(sub => {
                         subTbody.innerHTML += `<tr>
-                            <td>${sub.userPhone}</td>
+                            <td>${sub.userEmail || sub.userPhone}</td>
                             <td>${sub.taskTitle}</td>
                             <td>₹${sub.rewardAmount}</td>
                             <td style="font-weight:bold; color:${sub.status==='Approved'?'green':'orange'}">${sub.status}</td>
@@ -148,7 +156,7 @@
                     });
                 }
 
-                // Load Withdrawal Requests (ALAG TABLE)
+                // Load Withdrawal Requests
                 let wdRes = await fetch('/api/admin/withdrawals');
                 let wds = await wdRes.json();
                 let wdTbody = document.getElementById('withdrawalList');
@@ -158,7 +166,7 @@
                 } else {
                     wds.forEach(wd => {
                         wdTbody.innerHTML += `<tr>
-                            <td>${wd.userPhone}</td>
+                            <td>${wd.userEmail || wd.userPhone}</td>
                             <td>₹${wd.amount}</td>
                             <td>${wd.accountDetails}</td>
                             <td style="font-weight:bold; color:${wd.status==='Approved'?'green':'orange'}">${wd.status}</td>
@@ -193,7 +201,7 @@
 
         async function deleteTask(id) {
             if (confirm("Are you sure you want to delete this offer?")) {
-                await fetch('/api/admin/tasks/delete/' + id, { method: 'POST' });
+                await fetch('/api/admin/tasks/delete/' + id, { method: 'DELETE' });
                 loadAdminData();
             }
         }

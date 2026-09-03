@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -74,7 +74,7 @@
             object-fit: cover;
         }
         .user-text h3 { margin: 0 0 4px 0; font-size: 18px; color: #222; }
-        .user-text p { margin: 0; font-size: 12px; color: #777; }
+        .user-text p { margin: 0; font-size: 12px; color: #777; word-break: break-all; }
 
         .earnings-stats {
             display: flex;
@@ -164,8 +164,8 @@
         <div class="user-details-box">
             <img src="banner.jpg" alt="Profile" class="user-avatar-lg" onerror="this.src='https://via.placeholder.com/60'">
             <div class="user-text">
-                <h3 id="profileName">Tanmay</h3>
-                <p id="profilePhone">Loading...</p>
+                <h3 id="profileName">User</h3>
+                <p id="profileEmail">Loading...</p>
             </div>
         </div>
         <div class="earnings-stats">
@@ -215,24 +215,29 @@
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
         <a href="earn.html" class="nav-item"><span>🪙</span><span>Earn</span></a>
-        <a onclick="openReferModal()" class="nav-item"><span>👥</span><span>Refer</span></a>
-        <a onclick="openWithdrawModal()" class="nav-item"><span>👛</span><span>Wallet</span></a>
+        <a href="refer.html" class="nav-item"><span>👥</span><span>Refer</span></a>
+        <a href="wallet.html" class="nav-item"><span>👛</span><span>Wallet</span></a>
         <a href="profile.html" class="nav-item active"><span>👤</span><span>Profile</span></a>
     </nav>
 
     <script>
-        const phone = localStorage.getItem('userPhone');
+        // Email-based Authentication Check
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
-            if (phone) {
-                document.getElementById('profilePhone').innerText = phone;
+            if (userEmail) {
+                document.getElementById('profileEmail').innerText = userEmail;
+                document.getElementById('profileName').innerText = userEmail.split('@')[0];
                 fetchUserData();
             }
         });
 
         async function fetchUserData() {
             try {
-                const res = await fetch(`/api/user/wallet/${phone}`);
+                const res = await fetch(`/api/user/wallet/${userEmail}`);
                 const data = await res.json();
                 if (data.success) {
                     document.getElementById('walletBalance').innerText = '₹' + data.wallet;

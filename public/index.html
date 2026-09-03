@@ -222,7 +222,7 @@
             font-size: 14px;
         }
 
-        /* Bottom Floating Navigation (Exact Screenshot Style) */
+        /* Bottom Floating Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 15px;
@@ -270,7 +270,7 @@
             <img src="banner.jpg" alt="User" class="user-avatar" onerror="this.src='https://via.placeholder.com/50'">
             <div class="user-info">
                 <h4>Welcome back,</h4>
-                <h2 id="userNameDisplay">Tanmay</h2>
+                <h2 id="userNameDisplay">User</h2>
             </div>
         </div>
         <div class="top-wallet-box" onclick="openWithdrawModal()">
@@ -293,7 +293,7 @@
 
     <!-- Working Bottom Navigation Bar -->
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
+        <a href="index.html" class="nav-item active"><span>🏠</span><span>Home</span></a>
         <a href="earn.html" class="nav-item"><span>🪙</span><span>Earn</span></a>
         <a href="refer.html" class="nav-item"><span>👥</span><span>Refer</span></a>
         <a href="wallet.html" class="nav-item"><span>👛</span><span>Wallet</span></a>
@@ -305,23 +305,16 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeWithdrawModal()">&times;</span>
             <h3 style="margin-top: 0; color: #333;">Withdraw Funds</h3>
-            <p
-                style="background: #fff3cd; color: #856404; padding: 8px; border-radius: 4px; font-size: 12px; margin-bottom: 15px;">
-                ⚠️ 5% commission on withdrawal.</p>
+            <p style="background: #fff3cd; color: #856404; padding: 8px; border-radius: 4px; font-size: 12px; margin-bottom: 15px;">⚠️ 5% commission on withdrawal.</p>
             <div style="margin-bottom: 15px;">
-                <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">UPI ID / Bank
-                    Details</label>
-                <input type="text" id="upiId" placeholder="e.g. mobile@paytm"
-                    style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; box-sizing:border-box;">
+                <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">UPI ID / Bank Details</label>
+                <input type="text" id="upiId" placeholder="e.g. mobile@paytm" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; box-sizing:border-box;">
             </div>
             <div style="margin-bottom: 15px;">
                 <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">Amount (₹)</label>
-                <input type="number" id="upiAmount" placeholder="Enter amount"
-                    style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; box-sizing:border-box;">
+                <input type="number" id="upiAmount" placeholder="Enter amount" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; box-sizing:border-box;">
             </div>
-            <button onclick="submitWithdraw()"
-                style="width:100%; background:#28a745; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold;">Withdraw
-                Now</button>
+            <button onclick="submitWithdraw()" style="width:100%; background:#28a745; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold;">Withdraw Now</button>
         </div>
     </div>
 
@@ -336,27 +329,14 @@
         </div>
     </div>
 
-    <!-- Refer Modal -->
-    <div id="referModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeReferModal()">&times;</span>
-            <h3 style="margin-top: 0; color: #007bff; text-align: center;">🎁 Refer & Earn ₹50</h3>
-            <p style="font-size: 13px; color: #555; text-align: center;">Share your link and get ₹50 when your friend
-                completes their first task!</p>
-            <div style="margin-bottom: 12px;">
-                <input type="text" id="refLinkBox" readonly
-                    style="width:100%; padding:8px; border:1px solid #ced4da; border-radius:6px; background:#f8f9fa; font-size:12px;" />
-            </div>
-            <button onclick="copyRefLink()"
-                style="width:100%; background:#007bff; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold;">Copy
-                Referral Link</button>
-        </div>
-    </div>
-
     <script>
-        const phone = localStorage.getItem('userPhone');
-        if (!phone && localStorage.getItem('isAdmin') !== 'true') {
+        // Email-based authentication check
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
             window.location.href = 'login.html';
+        } else if (userEmail) {
+            // Display email username or email text
+            document.getElementById('userNameDisplay').innerText = userEmail.split('@')[0];
         }
 
         function showToast(message, type = 'success') {
@@ -368,9 +348,9 @@
         }
 
         async function fetchUserWallet() {
-            if (!phone) return;
+            if (!userEmail) return;
             try {
-                const res = await fetch(`/api/user/wallet/${phone}`);
+                const res = await fetch(`/api/user/wallet/${userEmail}`);
                 const data = await res.json();
                 if (data.success) {
                     document.getElementById('walletBalance').innerText = '₹' + data.wallet;
@@ -394,23 +374,10 @@
         }
         function closeStatusModal() { document.getElementById('statusModal').style.display = 'none'; }
 
-        function openReferModal() {
-            document.getElementById('referModal').style.display = 'flex';
-            document.getElementById('refLinkBox').value = `${window.location.origin}/login.html?ref=${phone}`;
-        }
-        function closeReferModal() { document.getElementById('referModal').style.display = 'none'; }
-
-        function copyRefLink() {
-            const box = document.getElementById('refLinkBox');
-            box.select();
-            document.execCommand('copy');
-            showToast("Referral link copied!", "success");
-        }
-
         async function loadUserWithdrawals() {
             const container = document.getElementById('statusListContainer');
             try {
-                const res = await fetch(`/api/user/withdrawals/${phone}`);
+                const res = await fetch(`/api/user/withdrawals/${userEmail}`);
                 const list = await res.json();
                 if (list.length === 0) {
                     container.innerHTML = '<p style="text-align:center; color:#777;">No withdrawal requests found.</p>';
@@ -434,7 +401,7 @@
                 const res = await fetch('/api/withdraw', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userPhone: phone, amount: Number(amount), accountDetails: upiId })
+                    body: JSON.stringify({ userEmail: userEmail, amount: Number(amount), accountDetails: upiId })
                 });
                 const data = await res.json();
                 showToast(data.message, data.success ? 'success' : 'error');

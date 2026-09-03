@@ -1,14 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Terms & Conditions</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms & Conditions - EarningApp</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #00796b;
+            padding: 15px 20px;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .logo { font-size: 20px; font-weight: bold; }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h2 { color: #00796b; margin-top: 0; }
+        p { line-height: 1.6; color: #444; font-size: 14px; }
+    </style>
 </head>
 <body>
-    <div class="navbar"><div class="logo">EarningApp</div><a href="index.html" style="color:white; text-decoration:none;">Home</a></div>
+    <div class="navbar">
+        <div class="logo">⚡ EarningApp</div>
+        <a href="index.html" style="color:white; text-decoration:none; font-weight:600;">Home</a>
+    </div>
+    
     <div class="container">
         <h2>Terms & Conditions</h2>
-        <p>1. Users must complete tasks using valid referral links.<br>2. Fake submissions will lead to account termination.</p>
+        <p>
+            1. Users must complete tasks using valid tracking and referral links.<br><br>
+            2. Fake submissions, automated scripts, or fraudulent activities will lead to immediate account termination.<br><br>
+            3. Withdrawal requests are processed subject to admin approval and a 5% platform commission.<br><br>
+            4. Referral bonuses are credited only after the referred user successfully completes their first verified task.
+        </p>
     </div>
+
+    <script>
+        // Optional Security Check (Agar aap chahte hain ki sirf logged-in users hi terms dekh sakein)
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
 </body>
 </html>

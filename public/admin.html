@@ -53,6 +53,12 @@
     </div>
 
     <script>
+        // Security Check: Sirf admin@earningapp.com hi yeh page khol sakega
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail || userEmail.toLowerCase() !== 'admin@earningapp.com') {
+            window.location.href = 'login.html';
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             loadAdminTasks();
         });
