@@ -41,6 +41,15 @@ const submissionSchema = new mongoose.Schema({
 });
 const Submission = mongoose.model('Submission', submissionSchema);
 
+// Approved Submission Schema (Excel report ke liye save karne ke liye)
+const approvedSubSchema = new mongoose.Schema({
+    userEmail: String,
+    taskTitle: String,
+    rewardAmount: Number,
+    approvedDate: { type: String, default: () => new Date().toLocaleString() }
+});
+const ApprovedSub = mongoose.model('ApprovedSub', approvedSubSchema);
+
 const withdrawalSchema = new mongoose.Schema({
     userEmail: { type: String, required: true },
     amount: { type: Number, required: true },
@@ -129,23 +138,52 @@ app.get('/api/admin/withdrawals', async (req, res) => {
     }
 });
 
+// Approve & Pay Route (Wallet me credit karke active list se delete karna aur Excel ke liye save karna)
 app.post('/api/admin/approve/:id', async (req, res) => {
     try {
         const sub = await Submission.findById(req.params.id);
-        if (!sub || sub.status === 'Approved') {
-            return res.json({ success: false, message: "Already approved or not found!" });
+        if (!sub) {
+            return res.json({ success: false, message: "Submission not found!" });
         }
-        sub.status = 'Approved';
-        await sub.save();
 
+        // 1. User ke wallet me reward credit karna
         let user = await User.findOne({ email: sub.userEmail });
         if (user) {
             user.wallet += sub.rewardAmount;
             await user.save();
         }
-        res.json({ success: true, message: "Task approved and reward credited to user wallet!" });
+
+        // 2. Approved record ko Excel report ke liye save karna
+        await ApprovedSub.create({
+            userEmail: sub.userEmail,
+            taskTitle: sub.taskTitle,
+            rewardAmount: sub.rewardAmount
+        });
+
+        // 3. Submissions table se delete karna taaki list se hat jaye
+        await Submission.findByIdAndDelete(req.params.id);
+
+        res.json({ success: true, message: "Task approved, reward credited to user wallet, and removed from active list!" });
     } catch (err) {
+        console.error("Approval error:", err);
         res.status(500).json({ success: false, message: "Approval error" });
+    }
+});
+
+// Excel / CSV Download Route for Admin
+app.get('/api/admin/export-excel', async (req, res) => {
+    try {
+        const records = await ApprovedSub.find();
+        let csv = 'User Email,Task Name,Reward (INR),Approved Date\n';
+        records.forEach(r => {
+            csv += `"${r.userEmail}","${r.taskTitle}","${r.rewardAmount}","${r.approvedDate}"\n`;
+        });
+        
+        res.header('Content-Type', 'text/csv');
+        res.attachment('Approved_Tasks_Report.csv');
+        res.send(csv);
+    } catch (err) {
+        res.status(500).send("Error exporting data");
     }
 });
 

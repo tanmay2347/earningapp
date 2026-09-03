@@ -81,9 +81,12 @@
             </table>
         </div>
 
-        <!-- Customer Task Submissions & Proofs Table -->
+        <!-- Customer Task Submissions & Proofs Table with Excel Export -->
         <div class="admin-card">
-            <h3>Customer Task Submissions & Proofs</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; border: none; padding: 0;">Customer Task Submissions & Proofs</h3>
+                <button onclick="window.location.href='/api/admin/export-excel'" style="background: #198754; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;">📊 Download Excel (CSV)</button>
+            </div>
             <table class="task-table">
                 <thead><tr><th>User Email</th><th>Task Name</th><th>Reward</th><th>Proof Screenshot</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody id="submissionList"></tbody>
@@ -218,7 +221,7 @@
         }
 
         async function paySub(id) {
-            if (confirm("Send payment from Admin Wallet to Customer Wallet?")) {
+            if (confirm("Send payment from Admin Wallet to Customer Wallet and remove from list?")) {
                 let res = await fetch('/api/admin/approve/' + id, { method: 'POST' });
                 let data = await res.json();
                 alert(data.message);
