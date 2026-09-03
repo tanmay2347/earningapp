@@ -125,14 +125,65 @@
             cursor: pointer;
         }
 
+        /* Daily Check-in Bonus Card */
+        .checkin-banner {
+            width: 90%;
+            max-width: 550px;
+            background: linear-gradient(135deg, #00796b 0%, #26a69a 100%);
+            margin: 10px auto 15px auto;
+            border-radius: 20px;
+            padding: 18px 20px;
+            color: white;
+            box-shadow: 0 6px 20px rgba(0, 121, 107, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .checkin-content h3 {
+            margin: 0 0 4px 0;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .checkin-content p {
+            margin: 0 0 12px 0;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .checkin-btn {
+            background: white;
+            color: #00796b;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .checkin-icon {
+            font-size: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
         /* Telegram Banner Styling */
         .telegram-banner {
             width: 90%;
             max-width: 550px;
             background: linear-gradient(135deg, #0088cc 0%, #00aaff 100%);
-            margin: 10px auto 20px auto;
+            margin: 0 auto 20px auto;
             border-radius: 20px;
-            padding: 20px;
+            padding: 18px 20px;
             color: white;
             box-shadow: 0 6px 20px rgba(0, 136, 204, 0.3);
             display: flex;
@@ -148,23 +199,21 @@
         }
 
         .tg-content h3 {
-            margin: 0 0 6px 0;
-            font-size: 18px;
+            margin: 0 0 4px 0;
+            font-size: 17px;
             font-weight: bold;
-            line-height: 1.3;
         }
 
         .tg-content p {
-            margin: 0 0 14px 0;
+            margin: 0 0 12px 0;
             font-size: 12px;
             opacity: 0.9;
-            line-height: 1.4;
         }
 
         .tg-join-btn {
             background: white;
             color: #0088cc;
-            padding: 6px 16px;
+            padding: 7px 16px;
             border-radius: 20px;
             font-size: 13px;
             font-weight: bold;
@@ -173,10 +222,10 @@
         }
 
         .tg-icon {
-            font-size: 45px;
+            font-size: 40px;
             background: rgba(255, 255, 255, 0.2);
-            width: 65px;
-            height: 65px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -330,6 +379,16 @@
         </div>
     </header>
 
+    <!-- Daily Check-in Bonus Banner -->
+    <div class="checkin-banner">
+        <div class="checkin-content">
+            <h3>Daily Login Bonus</h3>
+            <p>Claim free cash rewards every day (₹1 to ₹5)!</p>
+            <button class="checkin-btn" id="checkinBtn" onclick="claimDailyBonus()">Claim Now ✨</button>
+        </div>
+        <div class="checkin-icon">🎁</div>
+    </div>
+
     <!-- Telegram Channel Banner with your link -->
     <a href="https://t.me/earn2347" target="_blank" class="telegram-banner">
         <div class="tg-content">
@@ -421,6 +480,40 @@
             fetchTasks();
             setInterval(fetchUserWallet, 4000);
         });
+
+        // Daily Check-in Bonus Function
+        async function claimDailyBonus() {
+            if (!userEmail) {
+                showToast("Please login first!", "error");
+                return;
+            }
+
+            const btn = document.getElementById('checkinBtn');
+            btn.innerText = "Claiming...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/user/daily-checkin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                const data = await res.json();
+                showToast(data.message, data.success ? 'success' : 'error');
+
+                if (data.success) {
+                    btn.innerText = "Claimed Today ✅";
+                    fetchUserWallet();
+                } else {
+                    btn.innerText = "Already Claimed";
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Server connection error!", "error");
+                btn.innerText = "Claim Now ✨";
+                btn.disabled = false;
+            }
+        }
 
         function openWithdrawModal() { document.getElementById('withdrawModal').style.display = 'flex'; }
         function closeWithdrawModal() { document.getElementById('withdrawModal').style.display = 'none'; }

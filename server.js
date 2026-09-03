@@ -26,10 +26,11 @@ const Task = mongoose.model('Task', taskSchema);
 const userSchema = new mongoose.Schema({
     name: { type: String, default: 'User' },
     email: { type: String, required: true, unique: true },
-    password: { type: String, default: '1234' }, // Password field added for security
+    password: { type: String, default: '1234' },
     wallet: { type: Number, default: 0 },
     referredBy: { type: String, default: '' },
-    referralBonusGiven: { type: Boolean, default: false }
+    referralBonusGiven: { type: Boolean, default: false },
+    lastCheckInDate: { type: String, default: '' } // Daily check-in tracking
 });
 const User = mongoose.model('User', userSchema);
 
@@ -37,8 +38,8 @@ const submissionSchema = new mongoose.Schema({
     userEmail: { type: String, required: true },
     taskTitle: { type: String, required: true },
     rewardAmount: { type: Number, required: true },
-    proofImage: { type: String, default: '' }, // Screenshot proof ke liye
-    status: { type: String, default: 'Pending' } // Pending, Approved, Rejected
+    proofImage: { type: String, default: '' },
+    status: { type: String, default: 'Pending' }
 });
 const Submission = mongoose.model('Submission', submissionSchema);
 
@@ -468,6 +469,52 @@ app.post('/api/user/update-password', async (req, res) => {
     } catch (err) {
         console.error("Update Password Error:", err);
         res.json({ success: false, message: "Error updating password" });
+    }
+});
+
+// --- 9. DAILY CHECK-IN BONUS ROUTE ---
+app.post('/api/user/daily-checkin', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.json({ success: false, message: "Email is required!" });
+        }
+
+        let user = await User.findOne({ email: email.trim().toLowerCase() });
+        if (!user) {
+            return res.json({ success: false, message: "User not found!" });
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (user.lastCheckInDate === todayStr) {
+            return res.json({ 
+                success: false, 
+                message: "You have already claimed your daily bonus today! Come back tomorrow." 
+            });
+        }
+
+        // Random bonus: Jyadatar ₹1, kabhi-kabhi ₹2 se ₹5 tak
+        let reward = 1;
+        const rand = Math.random();
+        if (rand > 0.85) reward = 5;
+        else if (rand > 0.65) reward = 4;
+        else if (rand > 0.40) reward = 3;
+        else if (rand > 0.20) reward = 2;
+
+        user.wallet += reward;
+        user.lastCheckInDate = todayStr;
+        await user.save();
+
+        res.json({ 
+            success: true, 
+            reward: reward, 
+            newWallet: user.wallet, 
+            message: `Congratulations! You won ₹${reward} as your Daily Check-in Bonus!` 
+        });
+    } catch (err) {
+        console.error("Daily Check-in Error:", err);
+        res.json({ success: false, message: "Error processing daily check-in" });
     }
 });
 
