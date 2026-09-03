@@ -46,46 +46,20 @@
             cursor: pointer;
         }
 
-        /* Share Container layout matching 2nd screenshot */
-        .share-buttons-container {
+        .whatsapp-share-btn {
+            background: #25d366;
+            color: white;
+            border: none;
             width: 90%;
             max-width: 450px;
+            display: block;
             margin: 15px auto;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .native-share-btn {
-            background: #26a69a;
-            color: white;
-            border: none;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(38, 166, 154, 0.3);
-            flex-shrink: 0;
-        }
-        .whatsapp-share-btn {
-            background: #26a69a;
-            color: white;
-            border: none;
-            flex: 1;
-            padding: 15px;
+            padding: 14px;
             border-radius: 30px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(38, 166, 154, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-align: center;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
         }
 
         /* Bottom Nav */
@@ -108,11 +82,11 @@
 
     <div class="refer-card">
         <h3>Invite Friends & Earn</h3>
-        <p style="font-size: 13px; color: #666;">Copy referral link and share it with your friends</p>
+        <p style="font-size: 13px; color: #666;">Copy referral code and share it with your friends</p>
         
         <div class="copy-box">
-            <span id="refLinkText" style="font-size: 13px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px;">Loading...</span>
-            <button class="copy-btn" onclick="copyLink()">Copy</button>
+            <span id="refCodeText" style="font-size: 16px; font-weight: bold; color: #00796b; letter-spacing: 1px;">Loading...</span>
+            <button class="copy-btn" onclick="copyCode()">Copy</button>
         </div>
     </div>
 
@@ -120,7 +94,7 @@
         <h4 style="margin-top: 0; text-align: left;">How It Works?</h4>
         <p style="text-align: left; font-size: 13px; color: #555; line-height: 1.6;">
             • Share the link to your friends and family<br>
-            • Tell them to use your refer link<br>
+            • Tell them to use your refer code<br>
             • When your friend completes their first task, you get ₹50 instantly!
         </p>
     </div>
@@ -130,14 +104,9 @@
         <b id="totalRef" style="font-size: 18px; color: #00796b;">0</b>
     </div>
 
-    <!-- Share Buttons Container (Circular Share Icon + WhatsApp Button) -->
-    <div class="share-buttons-container">
-        <button class="native-share-btn" onclick="shareGeneral()" title="Share">🔗</button>
-        <button class="whatsapp-share-btn" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
-    </div>
+    <button class="whatsapp-share-btn" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
 
     <!-- Bottom Nav -->
-    <main></main>
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
         <a href="earn.html" class="nav-item"><span>🪙</span><span>Earn</span></a>
@@ -152,10 +121,21 @@
             window.location.href = 'login.html';
         }
 
-        const refLink = `${window.location.origin}/login.html?ref=${userEmail}`;
+        // Har user ke email se ek unique alphanumeric code generate karne ka tarika
+        function generateUniqueCode(email) {
+            let hash = 0;
+            for (let i = 0; i < email.length; i++) {
+                hash = email.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            let codeNumber = Math.abs(hash).toString(36).toUpperCase();
+            return "EARN" + codeNumber.substring(0, 6);
+        }
+
+        const userReferCode = generateUniqueCode(userEmail || "user");
+        const refLink = `${window.location.origin}/login.html?ref=${userReferCode}`;
 
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('refLinkText').innerText = refLink;
+            document.getElementById('refCodeText').innerText = userReferCode;
             if(userEmail) loadReferStats();
         });
 
@@ -170,31 +150,20 @@
             } catch(e) { console.error(e); }
         }
 
-        function copyLink() {
-            navigator.clipboard.writeText(refLink);
-            alert("Referral link copied to clipboard!");
+        function copyCode() {
+            navigator.clipboard.writeText(userReferCode);
+            alert("Referral code copied to clipboard!");
         }
 
         function shareWhatsApp() {
-            const text = encodeURIComponent(`🔥 Join EarningApp and earn real cash daily! Sign up here:\n${refLink}`);
-            window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
-        }
+            const message = `Join EarningApp and start earning rewards! 🐱💵\n\n` +
+                `• Complete tasks and earn real money.\n` +
+                `• Refer friends and earn rewards.\n\n` +
+                `Use my referral code: *${userReferCode}*\n\n` +
+                `👉 Download now: ${refLink}`;
 
-        async function shareGeneral() {
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'EarningApp Referral',
-                        text: 'Join EarningApp and earn real cash daily! Sign up using my link:',
-                        url: refLink,
-                    });
-                } catch (err) {
-                    console.log('Error sharing:', err);
-                }
-            } else {
-                copyLink();
-                alert("Sharing not supported on this browser. Link copied instead!");
-            }
+            const text = encodeURIComponent(message);
+            window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
         }
     </script>
 </body>
