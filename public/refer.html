@@ -46,20 +46,46 @@
             cursor: pointer;
         }
 
+        /* Share Buttons Container (Circular Share Icon + WhatsApp Button) */
+        .share-buttons-container {
+            width: 90%;
+            max-width: 450px;
+            margin: 15px auto;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .native-share-btn {
+            background: #26a69a;
+            color: white;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(38, 166, 154, 0.3);
+            flex-shrink: 0;
+        }
         .whatsapp-share-btn {
             background: #25d366;
             color: white;
             border: none;
-            width: 90%;
-            max-width: 450px;
-            display: block;
-            margin: 15px auto;
-            padding: 14px;
+            flex: 1;
+            padding: 15px;
             border-radius: 30px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
         }
 
         /* Bottom Nav */
@@ -104,7 +130,11 @@
         <b id="totalRef" style="font-size: 18px; color: #00796b;">0</b>
     </div>
 
-    <button class="whatsapp-share-btn" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
+    <!-- Share Buttons Container (Circular Share Icon + WhatsApp Button) -->
+    <div class="share-buttons-container">
+        <button class="native-share-btn" onclick="shareGeneral()" title="Share">🔗</button>
+        <button class="whatsapp-share-btn" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
+    </div>
 
     <!-- Bottom Nav -->
     <nav class="bottom-nav">
@@ -121,7 +151,6 @@
             window.location.href = 'login.html';
         }
 
-        // Har user ke email se ek unique alphanumeric code generate karne ka tarika
         function generateUniqueCode(email) {
             let hash = 0;
             for (let i = 0; i < email.length; i++) {
@@ -164,6 +193,28 @@
 
             const text = encodeURIComponent(message);
             window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        }
+
+        async function shareGeneral() {
+            const message = `Join EarningApp and start earning rewards! 🐱💵\n\n` +
+                `• Complete tasks and earn real money.\n` +
+                `• Refer friends and earn rewards.\n\n` +
+                `Use my referral code: ${userReferCode}\n\n` +
+                `👉 Download now: ${refLink}`;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'EarningApp Referral',
+                        text: message,
+                    });
+                } catch (err) {
+                    console.log('Error sharing:', err);
+                }
+            } else {
+                copyCode();
+                alert("Sharing not supported on this browser. Referral code copied instead!");
+            }
         }
     </script>
 </body>
