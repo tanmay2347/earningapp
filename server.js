@@ -23,17 +23,17 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/earning-app
 })
 .catch((err) => console.log('Database connection error: ', err));
 
-// Task Schema & Model
+// Task Schema & Model (Description optional ki gayi hai)
 const taskSchema = new mongoose.Schema({
     title: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String, default: 'Complete task & earn reward' },
     logoUrl: { type: String, required: true },
     referLink: { type: String, required: true },
     rewardAmount: { type: Number, required: true }
 });
 const Task = mongoose.model('Task', taskSchema);
 
-// User Schema & Model (Updated for Email-based Authentication)
+// User Schema & Model (Email-based Authentication)
 const userSchema = new mongoose.Schema({
     name: { type: String, default: 'User' },
     email: { type: String, required: true, unique: true },
@@ -61,7 +61,7 @@ const withdrawalSchema = new mongoose.Schema({
 });
 const Withdrawal = mongoose.model('Withdrawal', withdrawalSchema);
 
-// --- 1. SIGNUP / LOGIN ROUTE (Email Based with Referral Handling) ---
+// --- 1. SIGNUP / LOGIN ROUTE ---
 app.post('/api/signup', async (req, res) => {
     try {
         const { email, referredBy } = req.body;
@@ -135,11 +135,19 @@ app.get('/api/tasks', async (req, res) => {
 
 app.post('/api/admin/tasks', async (req, res) => {
     try {
-        const newTask = new Task(req.body);
+        const { title, description, logoUrl, referLink, rewardAmount } = req.body;
+        const newTask = new Task({
+            title,
+            description: description || 'Complete task & earn reward',
+            logoUrl: logoUrl || 'https://via.placeholder.com/50',
+            referLink,
+            rewardAmount
+        });
         await newTask.save();
         res.json({ success: true, message: "Task added successfully!" });
     } catch (err) {
-        res.status(500).json({ error: "Failed to add task" });
+        console.error("Failed to add task:", err);
+        res.status(500).json({ success: false, error: "Failed to add task" });
     }
 });
 
@@ -152,7 +160,7 @@ app.delete('/api/admin/tasks/delete/:id', async (req, res) => {
     }
 });
 
-// --- 5. TASK SUBMISSIONS & REFERRAL BONUS (₹50 on First Task) ---
+// --- 5. TASK SUBMISSIONS & REFERRAL BONUS ---
 app.post('/api/submit-task', async (req, res) => {
     try {
         const { userEmail, taskTitle, rewardAmount } = req.body;
@@ -180,7 +188,7 @@ app.post('/api/submit-task', async (req, res) => {
     }
 });
 
-// --- 6. WITHDRAWAL ROUTES (With 5% Admin Commission) ---
+// --- 6. WITHDRAWAL ROUTES ---
 app.post('/api/withdraw', async (req, res) => {
     try {
         const { userEmail, amount, accountDetails } = req.body;
