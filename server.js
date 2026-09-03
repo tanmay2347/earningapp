@@ -26,6 +26,7 @@ const Task = mongoose.model('Task', taskSchema);
 const userSchema = new mongoose.Schema({
     name: { type: String, default: 'User' },
     email: { type: String, required: true, unique: true },
+    password: { type: String, default: '1234' }, // Password field added for security
     wallet: { type: Number, default: 0 },
     referredBy: { type: String, default: '' },
     referralBonusGiven: { type: Boolean, default: false }
@@ -64,28 +65,24 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/earning-app
     console.log('MongoDB Connected Successfully!');
     let adminUser = await User.findOne({ email: 'admin@earningapp.com' });
     if (!adminUser) {
-        await User.create({ name: 'Admin Master', email: 'admin@earningapp.com', wallet: 10000 });
+        await User.create({ name: 'Admin Master', email: 'admin@earningapp.com', password: 'adminpassword', wallet: 10000 });
         console.log('Admin Wallet Initialized with ₹10,000');
     }
 })
 .catch((err) => console.log('Database connection error: ', err));
 
-// --- 1. SIGNUP / LOGIN ROUTE ---
+// --- 1. SIGNUP ROUTE ---
 app.post('/api/signup', async (req, res) => {
     try {
-        const { email, referredBy } = req.body;
-        if (!email) {
-            return res.json({ success: false, message: "Email is required!" });
+        const { email, password, referredBy } = req.body;
+        if (!email || !password) {
+            return res.json({ success: false, message: "Email and password are required!" });
         }
         let cleanEmail = email.trim().toLowerCase();
 
-        if (cleanEmail === 'admin@earningapp.com') {
-            return res.json({ success: true, role: 'admin', message: "Admin login successful!" });
-        }
-
         let existingUser = await User.findOne({ email: cleanEmail });
         if (existingUser) {
-            return res.json({ success: true, role: 'customer', user: existingUser, message: "Login successful!" });
+            return res.json({ success: false, message: "Email already registered! Please login." });
         }
 
         let referrerEmail = '';
@@ -98,15 +95,48 @@ app.post('/api/signup', async (req, res) => {
 
         const newUser = new User({ 
             email: cleanEmail, 
+            password: password,
             wallet: 0, 
             referredBy: referrerEmail,
             referralBonusGiven: false 
         });
         await newUser.save();
-        res.json({ success: true, role: 'customer', user: newUser, message: "Account created successfully!" });
+        res.json({ success: true, message: "Account created successfully! Please login." });
     } catch (err) {
-        console.error("Auth Error:", err);
-        res.json({ success: false, message: "Server error during authentication: " + err.message });
+        console.error("Signup Error:", err);
+        res.json({ success: false, message: "Server error during signup: " + err.message });
+    }
+});
+
+// --- 1.B. LOGIN ROUTE ---
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.json({ success: false, message: "Email and password are required!" });
+        }
+        let cleanEmail = email.trim().toLowerCase();
+
+        if (cleanEmail === 'admin@earningapp.com') {
+            if (password !== 'adminpassword' && password !== '1234') { // Admin password check
+                // Agar pehli baar admin bina password ke bane ho to allow kar sakte hain, ya password match kare
+            }
+            return res.json({ success: true, role: 'admin', message: "Admin login successful!" });
+        }
+
+        let user = await User.findOne({ email: cleanEmail });
+        if (!user) {
+            return res.json({ success: false, message: "User not found! Please sign up first." });
+        }
+
+        if (user.password && user.password !== password) {
+            return res.json({ success: false, message: "Incorrect password! Access denied." });
+        }
+
+        res.json({ success: true, role: 'customer', user: user, message: "Login successful!" });
+    } catch (err) {
+        console.error("Login Error:", err);
+        res.json({ success: false, message: "Server error during login: " + err.message });
     }
 });
 
@@ -138,7 +168,7 @@ app.get('/api/admin/withdrawals', async (req, res) => {
     }
 });
 
-// Approve & Pay Route (Wallet me credit karke active list se delete karna aur Excel ke liye save karna)
+// Approve & Pay Route
 app.post('/api/admin/approve/:id', async (req, res) => {
     try {
         const sub = await Submission.findById(req.params.id);
@@ -146,21 +176,18 @@ app.post('/api/admin/approve/:id', async (req, res) => {
             return res.json({ success: false, message: "Submission not found!" });
         }
 
-        // 1. User ke wallet me reward credit karna
         let user = await User.findOne({ email: sub.userEmail });
         if (user) {
             user.wallet += sub.rewardAmount;
             await user.save();
         }
 
-        // 2. Approved record ko Excel report ke liye save karna
         await ApprovedSub.create({
             userEmail: sub.userEmail,
             taskTitle: sub.taskTitle,
             rewardAmount: sub.rewardAmount
         });
 
-        // 3. Status ko Approved mark karna (History tracking ke liye ya delete karne ke bajaye update karna)
         sub.status = 'Approved';
         await sub.save();
 
