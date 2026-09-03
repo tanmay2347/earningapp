@@ -81,11 +81,11 @@
             </table>
         </div>
 
-        <!-- Customer Task Submissions Table -->
+        <!-- Customer Task Submissions & Proofs Table -->
         <div class="admin-card">
-            <h3>Customer Task Submissions & Payouts</h3>
+            <h3>Customer Task Submissions & Proofs</h3>
             <table class="task-table">
-                <thead><tr><th>User Email</th><th>Task Name</th><th>Reward</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>User Email</th><th>Task Name</th><th>Reward</th><th>Proof Screenshot</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody id="submissionList"></tbody>
             </table>
         </div>
@@ -137,20 +137,22 @@
                     });
                 }
 
-                // Load Task Submissions
+                // Load Task Submissions with Proof Screenshot Link
                 let subs = await (await fetch('/api/admin/submissions')).json();
                 let subTbody = document.getElementById('submissionList');
                 subTbody.innerHTML = '';
                 if (subs.length === 0) {
-                    subTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No task submissions yet.</td></tr>';
+                    subTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No task submissions yet.</td></tr>';
                 } else {
                     subs.forEach(sub => {
+                        let proofLink = sub.proofImage ? `<a href="${sub.proofImage}" target="_blank" style="color:#007bff; font-weight:bold; text-decoration:underline;">View Proof</a>` : '<span style="color:#777;">No Image</span>';
                         subTbody.innerHTML += `<tr>
                             <td>${sub.userEmail || sub.userPhone}</td>
                             <td>${sub.taskTitle}</td>
                             <td>₹${sub.rewardAmount}</td>
+                            <td>${proofLink}</td>
                             <td style="font-weight:bold; color:${sub.status==='Approved'?'green':'orange'}">${sub.status}</td>
-                            <td>${sub.status==='Pending'? `<button class="approve-btn" onclick="paySub('${sub._id}')">Pay Wallet</button>` : '<span style="color:green; font-weight:bold;">Paid to Wallet</span>'}</td>
+                            <td>${sub.status==='Pending'? `<button class="approve-btn" onclick="paySub('${sub._id}')">Approve & Pay</button>` : '<span style="color:green; font-weight:bold;">Paid</span>'}</td>
                         </tr>`;
                     });
                 }

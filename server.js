@@ -7,7 +7,7 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Badi images (Base64) ke liye limit badha di gayi hai
 app.use(cors());
 app.use(express.static('public'));
 
@@ -34,6 +34,7 @@ const submissionSchema = new mongoose.Schema({
     userEmail: { type: String, required: true },
     taskTitle: { type: String, required: true },
     rewardAmount: { type: Number, required: true },
+    proofImage: { type: String, default: '' }, // Screenshot proof ke liye
     status: { type: String, default: 'Pending' }
 });
 const Submission = mongoose.model('Submission', submissionSchema);
@@ -211,7 +212,6 @@ app.post('/api/admin/tasks/update/:id', async (req, res) => {
     }
 });
 
-// Delete route supporting both DELETE and POST methods
 app.delete('/api/admin/tasks/delete/:id', async (req, res) => {
     try {
         await Task.findByIdAndDelete(req.params.id);
@@ -230,13 +230,19 @@ app.post('/api/admin/tasks/delete/:id', async (req, res) => {
     }
 });
 
-// --- 5. TASK SUBMISSIONS & REFERRAL BONUS ---
+// --- 5. TASK SUBMISSIONS & SCREENSHOT PROOF ---
 app.post('/api/submit-task', async (req, res) => {
     try {
-        const { userEmail, taskTitle, rewardAmount } = req.body;
+        const { userEmail, taskTitle, rewardAmount, proofImage } = req.body;
         let email = userEmail.trim().toLowerCase();
 
-        const newSub = new Submission({ userEmail: email, taskTitle, rewardAmount, status: 'Pending' });
+        const newSub = new Submission({ 
+            userEmail: email, 
+            taskTitle, 
+            rewardAmount, 
+            proofImage: proofImage || '',
+            status: 'Pending' 
+        });
         await newSub.save();
 
         let currentUser = await User.findOne({ email });
@@ -251,10 +257,10 @@ app.post('/api/submit-task', async (req, res) => {
             }
         }
 
-        res.json({ success: true, message: "Task submitted for verification!" });
+        res.json({ success: true, message: "Task proof submitted for verification successfully!" });
     } catch (err) {
         console.error("Submit task error:", err);
-        res.json({ success: false, message: "Error submitting task" });
+        res.json({ success: false, message: "Error submitting task proof" });
     }
 });
 

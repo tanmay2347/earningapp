@@ -11,48 +11,39 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            padding-bottom: 100px;
+            padding-bottom: 120px;
         }
         .back-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .back-btn { background: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
-        .top-card {
+        .top-card, .instruction-card, .upload-card {
             background: white;
             border-radius: 20px;
             padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
+        .top-card { display: flex; justify-content: space-between; align-items: center; }
         .top-logo { width: 60px; height: 60px; border-radius: 12px; object-fit: contain; background: #f8f9fa; }
         
-        .instruction-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
         .step-item { display: flex; align-items: center; gap: 12px; margin: 15px 0; font-size: 15px; color: #444; font-weight: 500; }
         .step-dot { width: 12px; height: 12px; background: #26a69a; border-radius: 50%; }
         
+        .upload-card { display: none; text-align: center; border: 2px dashed #00796b; background: #f4fdfc; }
+        
         .action-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; }
-        .install-now-btn {
+        .btn-main {
             width: 100%;
             background: #00796b;
             color: white;
             border: none;
             padding: 16px;
             border-radius: 30px;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 5px 20px rgba(0, 121, 107, 0.4);
             text-align: center;
-            text-decoration: none;
-            display: block;
         }
     </style>
 </head>
@@ -75,17 +66,24 @@
     <div class="instruction-card">
         <h3 style="margin-top:0;">Follow the instructions below:</h3>
         <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
-        <div class="step-item"><div class="step-dot"></div><span>Install and Register using email/mobile</span></div>
+        <div class="step-item"><div class="step-dot"></div><span>Click Install & Register using app</span></div>
         <div class="step-item"><div class="step-dot"></div><span>Complete required steps / KYC</span></div>
-        <div class="step-item"><div class="step-dot"></div><span>Submit for verification</span></div>
+        <div class="step-item"><div class="step-dot"></div><span>Take screenshot & upload below</span></div>
     </div>
 
-    <div class="action-bar">
-        <button onclick="handleTaskAction()" class="install-now-btn">Install Now & Submit 🔗</button>
+    <!-- Screenshot Upload Section (Initially Hidden, Appears after clicking Install) -->
+    <div id="uploadSection" class="upload-card">
+        <h3 style="margin-top:0; color:#00796b;">📸 Upload Proof Screenshot</h3>
+        <p style="font-size: 13px; color: #555;">Upload task completion screenshot for admin verification.</p>
+        <input type="file" id="proofImage" accept="image/*" style="margin: 15px 0; width: 100%;">
+        <button onclick="submitTaskProof()" class="btn-main" style="background: #28a745;">Submit For Verification 🚀</button>
+    </div>
+
+    <div class="action-bar" id="actionBar">
+        <button onclick="openTaskLink()" class="btn-main">Install Now & Complete 🔗</button>
     </div>
 
     <script>
-        // Email-based Authentication Check
         const userEmail = localStorage.getItem('userEmail');
         if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
             window.location.href = 'login.html';
@@ -103,29 +101,81 @@
         document.getElementById('taskReward').innerText = '🪙 ₹' + (reward || 0);
         document.getElementById('taskLogo').src = logo || 'https://via.placeholder.com/60';
 
-        async function handleTaskAction() {
+        let taskOpened = false;
+
+        function openTaskLink() {
             if (!link) {
                 alert("Invalid tracking link!");
                 return;
             }
+            window.open(link, '_blank');
+            taskOpened = true;
 
-            try {
-                // Backend par task submission bhejenge taaki admin approve kar sake aur refer bonus mil sake
-                await fetch('/api/submit-task', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userEmail: userEmail,
-                        taskTitle: title,
-                        rewardAmount: Number(reward)
-                    })
-                });
-            } catch (err) {
-                console.error("Submission error:", err);
+            // Hide action bar and show screenshot upload section
+            document.getElementById('actionBar').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'block';
+            alert("Now complete the task, take a screenshot, and upload it below!");
+        }
+
+        async function submitTaskProof() {
+            const fileInput = document.getElementById('proofImage');
+            if (fileInput.files.length === 0) {
+                alert("Please select a screenshot!");
+                return;
             }
 
-            // Affiliate / Refer link par user ko redirect kar dena
-            window.open(link, '_blank');
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onloadasync = async function(event) {
+                const base64Image = event.target.result;
+
+                try {
+                    const res = await fetch('/api/submit-task', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userEmail: userEmail,
+                            taskTitle: title,
+                            rewardAmount: Number(reward),
+                            proofImage: base64Image
+                        })
+                    });
+                    const data = await res.json();
+                    alert(data.message || "Submitted successfully!");
+                    if(data.success) {
+                        window.location.href = 'index.html';
+                    }
+                } catch (err) {
+                    alert("Error submitting task proof!");
+                }
+            };
+            
+            // Fix for file reader execution
+            reader.onload = async function(uploadEvent) {
+                const base64Image = uploadEvent.target.result;
+                try {
+                    const res = await fetch('/api/submit-task', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userEmail: userEmail,
+                            taskTitle: title,
+                            rewardAmount: Number(reward),
+                            proofImage: base64Image
+                        })
+                    });
+                    const data = await res.json();
+                    alert(data.message || "Submitted successfully!");
+                    if(data.success) {
+                        window.location.href = 'index.html';
+                    }
+                } catch (err) {
+                    alert("Error submitting task proof!");
+                }
+            }
+
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
