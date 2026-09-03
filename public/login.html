@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - EarningApp</title>
+    <title>Login & Signup - EarningApp</title>
     <link rel="stylesheet" href="style.css">
     <style>
         body {
@@ -18,7 +18,7 @@
 
         .login-card {
             background: white;
-            padding: 40px 30px;
+            padding: 35px 25px;
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             width: 100%;
@@ -31,37 +31,66 @@
             font-size: 26px;
             font-weight: bold;
             color: #00796b;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
 
         .app-subtitle {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
-        .manual-section {
-            margin-top: 15px;
-            text-align: left;
+        /* Tab Switcher (Login / Signup) */
+        .auth-tabs {
+            display: flex;
+            background: #f1f3f5;
+            border-radius: 20px;
+            padding: 4px;
+            margin-bottom: 20px;
         }
-        .manual-section label {
+        .auth-tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 10px;
+            border-radius: 16px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            color: #555;
+            transition: 0.3s;
+        }
+        .auth-tab-btn.active {
+            background: #00796b;
+            color: white;
+            box-shadow: 0 2px 6px rgba(0,121,107,0.3);
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        .form-group label {
             display: block;
             font-size: 13px;
             font-weight: 600;
             color: #444;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
-        .manual-section input {
+        .form-group input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 12px 14px;
             border: 1px solid #ced4da;
             border-radius: 12px;
             font-size: 14px;
             box-sizing: border-box;
-            margin-bottom: 15px;
             outline: none;
         }
-        .manual-btn {
+        .form-group input:focus {
+            border-color: #00796b;
+        }
+
+        .auth-btn {
             width: 100%;
             background: #00796b;
             color: white;
@@ -72,12 +101,21 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 121, 107, 0.3);
+            margin-top: 10px;
         }
 
         #errorMsg {
             color: #dc3545;
             font-size: 13px;
-            margin-top: 15px;
+            margin-top: 12px;
+            font-weight: 600;
+            display: none;
+        }
+        #successMsg {
+            color: #28a745;
+            font-size: 13px;
+            margin-top: 12px;
+            font-weight: 600;
             display: none;
         }
     </style>
@@ -86,56 +124,122 @@
 
     <div class="login-card">
         <div class="app-logo-text">⚡ EarningApp</div>
-        <div class="app-subtitle">Sign in with your Email to continue</div>
+        <div class="app-subtitle" id="formSubtitle">Secure Login to your account</div>
 
-        <div class="manual-section">
-            <label>Email Address</label>
-            <input type="email" id="manualEmail" placeholder="name@example.com">
-            <button class="manual-btn" onclick="handleManualLogin()">Login / Sign Up</button>
+        <!-- Mode Switcher Tabs -->
+        <div class="auth-tabs">
+            <button class="auth-tab-btn active" id="loginTabBtn" onclick="switchMode('login')">Login</button>
+            <button class="auth-tab-btn" id="signupTabBtn" onclick="switchMode('signup')">Sign Up</button>
         </div>
 
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="emailInput" placeholder="name@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="passwordInput" placeholder="Enter your password" required>
+        </div>
+
+        <button class="auth-btn" id="actionBtn" onclick="handleSubmit()">Login</button>
+
         <div id="errorMsg"></div>
+        <div id="successMsg"></div>
     </div>
 
     <script>
-        async function handleManualLogin() {
-            const email = document.getElementById('manualEmail').value.trim();
-            const errorDiv = document.getElementById('errorMsg');
+        let currentMode = 'login'; // 'login' or 'signup'
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const loginBtn = document.getElementById('loginTabBtn');
+            const signupBtn = document.getElementById('signupTabBtn');
+            const actionBtn = document.getElementById('actionBtn');
+            const subtitle = document.getElementById('formSubtitle');
+
+            hideMessages();
+
+            if (mode === 'login') {
+                loginBtn.classList.add('active');
+                signupBtn.classList.remove('active');
+                actionBtn.innerText = 'Login';
+                subtitle.innerText = 'Secure Login to your account';
+            } else {
+                signupBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+                actionBtn.innerText = 'Sign Up';
+                subtitle.innerText = 'Create a new secure account';
+            }
+        }
+
+        async function handleSubmit() {
+            hideMessages();
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
 
             if (!email || !email.includes('@')) {
-                errorDiv.innerText = "Please enter a valid email address!";
-                errorDiv.style.display = 'block';
+                showError("Please enter a valid email address!");
+                return;
+            }
+            if (!password || password.length < 4) {
+                showError("Password must be at least 4 characters long!");
                 return;
             }
 
             const urlParams = new URLSearchParams(window.location.search);
             const refBy = urlParams.get('ref') || '';
 
+            const endpoint = currentMode === 'login' ? '/api/login' : '/api/signup';
+
             try {
-                const res = await fetch('/api/signup', {
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, referredBy: refBy })
+                    body: JSON.stringify({ email: email, password: password, referredBy: refBy })
                 });
                 const data = await res.json();
 
                 if (data.success) {
+                    if (currentMode === 'signup') {
+                        showSuccess(data.message || "Account created successfully! Please login.");
+                        setTimeout(() => switchMode('login'), 1500);
+                        return;
+                    }
+
                     localStorage.setItem('userEmail', email);
                     
-                    // Agar Admin email hai toh admin panel par bhejenge, warna customer home par
                     if (email.toLowerCase() === 'admin@earningapp.com') {
+                        localStorage.setItem('isAdmin', 'true');
                         window.location.href = 'admin.html';
                     } else {
+                        localStorage.removeItem('isAdmin');
                         window.location.href = 'index.html';
                     }
                 } else {
-                    errorDiv.innerText = data.message || "Login failed!";
-                    errorDiv.style.display = 'block';
+                    showError(data.message || "Authentication failed!");
                 }
             } catch (err) {
-                errorDiv.innerText = "Server connection error!";
-                errorDiv.style.display = 'block';
+                console.error(err);
+                showError("Server connection error!");
             }
+        }
+
+        function showError(msg) {
+            const errDiv = document.getElementById('errorMsg');
+            errDiv.innerText = msg;
+            errDiv.style.display = 'block';
+        }
+
+        function showSuccess(msg) {
+            const succDiv = document.getElementById('successMsg');
+            succDiv.innerText = msg;
+            succDiv.style.display = 'block';
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'none';
         }
     </script>
 </body>
