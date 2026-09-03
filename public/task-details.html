@@ -71,6 +71,7 @@
         <div class="step-item"><div class="step-dot"></div><span>Take screenshot & upload below</span></div>
     </div>
 
+    <!-- Screenshot Upload Section -->
     <div id="uploadSection" class="upload-card">
         <h3 style="margin-top:0; color:#00796b;">📸 Upload Proof Screenshot</h3>
         <p style="font-size: 13px; color: #555; margin-bottom: 20px;">Upload task completion screenshot for admin verification.</p>
@@ -128,7 +129,6 @@
             }
             window.open(link, '_blank');
 
-            // Hide action bar and show screenshot upload section
             document.getElementById('actionBar').style.display = 'none';
             document.getElementById('uploadSection').style.display = 'block';
             alert("Now complete the task, take a screenshot, and upload it below!");
@@ -137,37 +137,82 @@
         async function submitTaskProof() {
             const fileInput = document.getElementById('proofImage');
             if (fileInput.files.length === 0) {
-                alert("Please select a screenshot!");
+                alert("Please select a screenshot first!");
                 return;
             }
 
             const file = fileInput.files[0];
+            const submitBtn = document.querySelector('#uploadSection button');
+            submitBtn.innerText = "Processing Image...";
+            submitBtn.disabled = true;
+
             const reader = new FileReader();
-
-            reader.onload = async function(uploadEvent) {
-                const base64Image = uploadEvent.target.result;
-                try {
-                    const res = await fetch('/api/submit-task', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            userEmail: userEmail,
-                            taskTitle: title,
-                            rewardAmount: Number(reward),
-                            proofImage: base64Image
-                        })
-                    });
-                    const data = await res.json();
-                    alert(data.message || "Submitted successfully!");
-                    if(data.success) {
-                        window.location.href = 'index.html';
-                    }
-                } catch (err) {
-                    alert("Error submitting task proof!");
-                }
-            }
-
             reader.readAsDataURL(file);
+
+            reader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
+
+                img.onload = async function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    const max_size = 800;
+                    if (width > height) {
+                        if (width > max_size) {
+                            height *= max_size / width;
+                            width = max_size;
+                        }
+                    } else {
+                        if (height > max_size) {
+                            width *= max_size / height;
+                            height = max_size;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                    submitBtn.innerText = "Uploading to Server...";
+
+                    try {
+                        const res = await fetch('/api/submit-task', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userEmail: userEmail,
+                                taskTitle: title,
+                                rewardAmount: Number(reward),
+                                proofImage: compressedBase64
+                            })
+                        });
+                        const data = await res.json();
+                        alert(data.message || "Submitted successfully!");
+                        if(data.success) {
+                            window.location.href = 'index.html';
+                        } else {
+                            submitBtn.innerText = "Submit For Verification 🚀";
+                            submitBtn.disabled = false;
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert("Error submitting task proof! Check your mobile internet connection.");
+                        submitBtn.innerText = "Submit For Verification 🚀";
+                        submitBtn.disabled = false;
+                    }
+                }
+            };
+
+            reader.onerror = function() {
+                alert("Failed to read image file!");
+                submitBtn.innerText = "Submit For Verification 🚀";
+                submitBtn.disabled = false;
+            };
         }
     </script>
 </body>

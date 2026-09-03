@@ -7,7 +7,9 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-app.use(express.json({ limit: '10mb' })); // Badi images (Base64) ke liye limit badha di gayi hai
+// Mobile ke large screenshot/Base64 payloads handle karne ke liye limits 100mb kar di gayi hain
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(cors());
 app.use(express.static('public'));
 
