@@ -37,7 +37,7 @@ const submissionSchema = new mongoose.Schema({
     taskTitle: { type: String, required: true },
     rewardAmount: { type: Number, required: true },
     proofImage: { type: String, default: '' }, // Screenshot proof ke liye
-    status: { type: String, default: 'Pending' }
+    status: { type: String, default: 'Pending' } // Pending, Approved, Rejected
 });
 const Submission = mongoose.model('Submission', submissionSchema);
 
@@ -160,13 +160,29 @@ app.post('/api/admin/approve/:id', async (req, res) => {
             rewardAmount: sub.rewardAmount
         });
 
-        // 3. Submissions table se delete karna taaki list se hat jaye
-        await Submission.findByIdAndDelete(req.params.id);
+        // 3. Status ko Approved mark karna (History tracking ke liye ya delete karne ke bajaye update karna)
+        sub.status = 'Approved';
+        await sub.save();
 
-        res.json({ success: true, message: "Task approved, reward credited to user wallet, and removed from active list!" });
+        res.json({ success: true, message: "Task approved and reward credited to user wallet!" });
     } catch (err) {
         console.error("Approval error:", err);
         res.status(500).json({ success: false, message: "Approval error" });
+    }
+});
+
+// Reject Task Route
+app.post('/api/admin/reject/:id', async (req, res) => {
+    try {
+        const sub = await Submission.findById(req.params.id);
+        if (!sub) {
+            return res.json({ success: false, message: "Submission not found!" });
+        }
+        sub.status = 'Rejected';
+        await sub.save();
+        res.json({ success: true, message: "Task submission rejected successfully!" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Error rejecting task" });
     }
 });
 
@@ -301,6 +317,26 @@ app.post('/api/submit-task', async (req, res) => {
     } catch (err) {
         console.error("Submit task error:", err);
         res.json({ success: false, message: "Error submitting task proof" });
+    }
+});
+
+// User Task Status & Stats API
+app.get('/api/user/task-status/:email', async (req, res) => {
+    try {
+        const email = req.params.email.trim().toLowerCase();
+        const submissions = await Submission.find({ userEmail: email });
+        
+        let approved = submissions.filter(s => s.status === 'Approved').length;
+        let pending = submissions.filter(s => s.status === 'Pending').length;
+        let rejected = submissions.filter(s => s.status === 'Rejected').length;
+
+        res.json({
+            success: true,
+            stats: { approved, pending, rejected },
+            submissions: submissions
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: "Server Error" });
     }
 });
 

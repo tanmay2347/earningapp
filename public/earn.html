@@ -193,15 +193,15 @@
         <div class="stats-title">Statistics</div>
         <div class="stats-grid">
             <div class="stat-card">
-                <h3 id="statApproved">0</h3>
+                <h3 id="statApproved" style="color: #28a745;">0</h3>
                 <p>Total Approved</p>
             </div>
             <div class="stat-card">
-                <h3 id="statPending">0</h3>
+                <h3 id="statPending" style="color: #ffc107;">0</h3>
                 <p>Total Pending</p>
             </div>
             <div class="stat-card">
-                <h3 id="statRejected">0</h3>
+                <h3 id="statRejected" style="color: #dc3545;">0</h3>
                 <p>Total Rejected</p>
             </div>
         </div>
@@ -239,6 +239,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             if (userEmail) {
                 fetchWallet();
+                loadTaskStats();
                 loadOffersTab();
             }
         });
@@ -249,6 +250,18 @@
                 const data = await res.json();
                 if (data.success) {
                     document.getElementById('walletBalance').innerText = '₹' + data.wallet;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadTaskStats() {
+            try {
+                const res = await fetch(`/api/user/task-status/${userEmail}`);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('statApproved').innerText = data.stats.approved;
+                    document.getElementById('statPending').innerText = data.stats.pending;
+                    document.getElementById('statRejected').innerText = data.stats.rejected;
                 }
             } catch (err) { console.error(err); }
         }
@@ -304,21 +317,36 @@
             const container = document.getElementById('earnContentList');
             container.innerHTML = '<p style="text-align:center; color:#555;">Loading status...</p>';
             try {
-                const res = await fetch(`/api/user/withdrawals/${userEmail}`);
-                const list = await res.json();
-                if (list.length === 0) {
-                    container.innerHTML = '<p style="text-align:center; color:#555;">No task status found.</p>';
+                const res = await fetch(`/api/user/task-status/${userEmail}`);
+                const data = await res.json();
+                
+                if (!data.success || data.submissions.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#555;">No task submissions found.</p>';
                     return;
                 }
+
+                // Stats update bhi sath me kar dena
+                document.getElementById('statApproved').innerText = data.stats.approved;
+                document.getElementById('statPending').innerText = data.stats.pending;
+                document.getElementById('statRejected').innerText = data.stats.rejected;
+
                 let html = '';
-                list.forEach(item => {
-                    html += `<div class="task-card">
-                        <div><b>₹${item.amount}</b><br><small>${item.accountDetails}</small></div>
-                        <span style="font-weight:bold; color:${item.status === 'Approved' ? 'green' : 'orange'}">${item.status}</span>
-                    </div>`;
+                data.submissions.forEach(sub => {
+                    let statusColor = sub.status === 'Approved' ? 'green' : (sub.status === 'Rejected' ? 'red' : 'orange');
+                    html += `
+                        <div class="task-card">
+                            <div class="task-details">
+                                <h3 style="margin:0 0 4px 0;">${sub.taskTitle}</h3>
+                                <small style="color:#666;">Reward: <b>₹${sub.rewardAmount}</b></small>
+                            </div>
+                            <span style="font-weight:bold; color:${statusColor}; font-size:15px;">${sub.status}</span>
+                        </div>
+                    `;
                 });
                 container.innerHTML = html;
-            } catch (err) { container.innerHTML = '<p style="text-align:center; color:#555;">Error loading status.</p>'; }
+            } catch (err) { 
+                container.innerHTML = '<p style="text-align:center; color:#555;">Error loading status.</p>'; 
+            }
         }
     </script>
 </body>
