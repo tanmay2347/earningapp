@@ -125,63 +125,12 @@
             cursor: pointer;
         }
 
-        /* Daily Check-in Bonus Card */
-        .checkin-banner {
-            width: 90%;
-            max-width: 550px;
-            background: linear-gradient(135deg, #00796b 0%, #26a69a 100%);
-            margin: 10px auto 15px auto;
-            border-radius: 20px;
-            padding: 18px 20px;
-            color: white;
-            box-shadow: 0 6px 20px rgba(0, 121, 107, 0.3);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .checkin-content h3 {
-            margin: 0 0 4px 0;
-            font-size: 17px;
-            font-weight: bold;
-        }
-
-        .checkin-content p {
-            margin: 0 0 12px 0;
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .checkin-btn {
-            background: white;
-            color: #00796b;
-            border: none;
-            padding: 7px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .checkin-icon {
-            font-size: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
         /* Telegram Banner Styling */
         .telegram-banner {
             width: 90%;
             max-width: 550px;
             background: linear-gradient(135deg, #0088cc 0%, #00aaff 100%);
-            margin: 0 auto 20px auto;
+            margin: 10px auto 20px auto;
             border-radius: 20px;
             padding: 18px 20px;
             color: white;
@@ -374,20 +323,17 @@
                 <h2 id="userNameDisplay">User</h2>
             </div>
         </div>
-        <div class="top-wallet-box" onclick="openWithdrawModal()">
-            <span>🪙</span> <span id="walletBalance">₹0</span>
+
+        <!-- Header Gift Box & Wallet Box -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div onclick="claimDailyBonus()" id="checkinBtn" title="Claim Daily Bonus" style="background: white; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 20px; transition: transform 0.2s;">
+                🎁
+            </div>
+            <div class="top-wallet-box" onclick="openWithdrawModal()">
+                <span>🪙</span> <span id="walletBalance">₹0</span>
+            </div>
         </div>
     </header>
-
-    <!-- Daily Check-in Bonus Banner -->
-    <div class="checkin-banner">
-        <div class="checkin-content">
-            <h3>Daily Login Bonus</h3>
-            <p>Claim free cash rewards every day (₹1 to ₹5)!</p>
-            <button class="checkin-btn" id="checkinBtn" onclick="claimDailyBonus()">Claim Now ✨</button>
-        </div>
-        <div class="checkin-icon">🎁</div>
-    </div>
 
     <!-- Telegram Channel Banner with your link -->
     <a href="https://t.me/earn2347" target="_blank" class="telegram-banner">
@@ -489,8 +435,7 @@
             }
 
             const btn = document.getElementById('checkinBtn');
-            btn.innerText = "Claiming...";
-            btn.disabled = true;
+            btn.style.transform = 'scale(0.9)';
 
             try {
                 const res = await fetch('/api/user/daily-checkin', {
@@ -502,16 +447,13 @@
                 showToast(data.message, data.success ? 'success' : 'error');
 
                 if (data.success) {
-                    btn.innerText = "Claimed Today ✅";
                     fetchUserWallet();
-                } else {
-                    btn.innerText = "Already Claimed";
                 }
+                setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
             } catch (err) {
                 console.error(err);
                 showToast("Server connection error!", "error");
-                btn.innerText = "Claim Now ✨";
-                btn.disabled = false;
+                btn.style.transform = 'scale(1)';
             }
         }
 
