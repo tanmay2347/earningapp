@@ -11,19 +11,9 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
-// Database Connection & Admin Initialization
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/earning-app')
-.then(async () => {
-    console.log('MongoDB Connected Successfully!');
-    let adminUser = await User.findOne({ email: 'admin@earningapp.com' });
-    if (!adminUser) {
-        await User.create({ name: 'Admin Master', email: 'admin@earningapp.com', wallet: 10000 });
-        console.log('Admin Wallet Initialized with ₹10,000');
-    }
-})
-.catch((err) => console.log('Database connection error: ', err));
+// --- SCHEMAS & MODELS (Pehle define kiye gaye hain taaki error na aaye) ---
 
-// Task Schema & Model (Description optional ki gayi hai)
+// Task Schema & Model
 const taskSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String, default: 'Complete task & earn reward' },
@@ -60,6 +50,20 @@ const withdrawalSchema = new mongoose.Schema({
     status: { type: String, default: 'Pending' }
 });
 const Withdrawal = mongoose.model('Withdrawal', withdrawalSchema);
+
+
+// --- DATABASE CONNECTION & ADMIN INITIALIZATION ---
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/earning-app')
+.then(async () => {
+    console.log('MongoDB Connected Successfully!');
+    let adminUser = await User.findOne({ email: 'admin@earningapp.com' });
+    if (!adminUser) {
+        await User.create({ name: 'Admin Master', email: 'admin@earningapp.com', wallet: 10000 });
+        console.log('Admin Wallet Initialized with ₹10,000');
+    }
+})
+.catch((err) => console.log('Database connection error: ', err));
+
 
 // --- 1. SIGNUP / LOGIN ROUTE ---
 app.post('/api/signup', async (req, res) => {
@@ -98,7 +102,7 @@ app.post('/api/signup', async (req, res) => {
         res.json({ success: true, role: 'customer', user: newUser, message: "Account created successfully!" });
     } catch (err) {
         console.error("Auth Error:", err);
-        res.json({ success: false, message: "Server error during authentication" });
+        res.json({ success: false, message: "Server error during authentication: " + err.message });
     }
 });
 
