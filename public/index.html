@@ -123,7 +123,7 @@
             color: #222;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Lamba email hone par ... dikhayega */
+            text-overflow: ellipsis;
         }
 
         .top-wallet-box {
@@ -267,15 +267,9 @@
         }
 
         .task-details h3 {
-            margin: 0 0 4px 0;
+            margin: 0;
             font-size: 16px;
             color: #222;
-        }
-
-        .task-desc {
-            margin: 0;
-            font-size: 12px;
-            color: #777;
         }
 
         .reward {
@@ -339,7 +333,7 @@
             </div>
         </div>
 
-        <!-- Compact Header Icons & Wallet Box -->
+        <!-- Header Compact Icons & Wallet Box -->
         <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
             <div onclick="claimDailyBonus()" id="checkinBtn" title="Claim Daily Bonus" style="background: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 16px; transition: transform 0.2s;">
                 🎁
@@ -456,7 +450,6 @@
             setInterval(fetchUserWallet, 4000);
         });
 
-        // Daily Check-in Bonus Function
         async function claimDailyBonus() {
             if (!userEmail) {
                 showToast("Please login first!", "error");
@@ -486,7 +479,6 @@
             }
         }
 
-        // Notification Modal Functions
         function openNotificationModal() {
             document.getElementById('notificationModal').style.display = 'flex';
             loadUserNotifications();
@@ -626,12 +618,12 @@
                         window.location.href = `task-details.html?title=${encodeURIComponent(task.title)}&desc=${encodeURIComponent(task.description)}&reward=${task.rewardAmount}&logo=${encodeURIComponent(task.logoUrl)}&link=${encodeURIComponent(task.referLink)}`;
                     };
 
+                    // Description hata diya gaya hai taaki home page clean rahe
                     card.innerHTML = `
                         <div class="card-left">
                             <img src="${task.logoUrl}" alt="Logo" class="task-logo" onerror="this.src='https://via.placeholder.com/50'">
                             <div class="task-details">
                                 <h3>${task.title}</h3>
-                                <p class="task-desc">${task.description}</p>
                             </div>
                         </div>
                         <div class="reward">₹${task.rewardAmount}</div>
