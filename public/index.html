@@ -64,13 +64,8 @@
             transform: translateY(0);
         }
 
-        #toastNotification.success {
-            background: #28a745;
-        }
-
-        #toastNotification.error {
-            background: #dc3545;
-        }
+        #toastNotification.success { background: #28a745; }
+        #toastNotification.error { background: #dc3545; }
 
         body {
             background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
@@ -79,7 +74,6 @@
             padding-bottom: 90px;
         }
 
-        /* Fixed Header to prevent overflow with long email */
         .app-header {
             display: flex;
             justify-content: space-between;
@@ -140,62 +134,57 @@
             white-space: nowrap;
         }
 
-        /* Telegram Banner Styling */
-        .telegram-banner {
+        /* Auto-Scrolling Slider Banner */
+        .slider-container {
             width: 90%;
             max-width: 550px;
-            background: linear-gradient(135deg, #0088cc 0%, #00aaff 100%);
             margin: 10px auto 20px auto;
             border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 121, 107, 0.2);
+            position: relative;
+        }
+
+        .slider-track {
+            display: flex;
+            width: 300%;
+            animation: slideAnimation 8s infinite ease-in-out;
+        }
+
+        .slide-card {
+            width: 33.333%;
+            flex-shrink: 0;
             padding: 18px 20px;
             color: white;
-            box-shadow: 0 6px 20px rgba(0, 136, 204, 0.3);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
+            box-sizing: border-box;
             text-decoration: none;
-            transition: transform 0.2s;
         }
 
-        .telegram-banner:hover {
-            transform: translateY(-3px);
+        .slide-1 { background: linear-gradient(135deg, #0088cc 0%, #00aaff 100%); } /* Telegram */
+        .slide-2 { background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); } /* WhatsApp */
+        .slide-3 { background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%); } /* Rewards */
+
+        @keyframes slideAnimation {
+            0% { transform: translateX(0%); }
+            30% { transform: translateX(0%); }
+            38% { transform: translateX(-33.333%); }
+            68% { transform: translateX(-33.333%); }
+            76% { transform: translateX(-66.666%); }
+            95% { transform: translateX(-66.666%); }
+            100% { transform: translateX(0%); }
         }
 
-        .tg-content h3 {
-            margin: 0 0 4px 0;
-            font-size: 17px;
-            font-weight: bold;
-        }
+        .slide-content h3 { margin: 0 0 4px 0; font-size: 16px; font-weight: bold; }
+        .slide-content p { margin: 0 0 10px 0; font-size: 12px; opacity: 0.9; }
+        .slide-btn { background: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .slide-1 .slide-btn { color: #0088cc; }
+        .slide-2 .slide-btn { color: #25D366; }
+        .slide-3 .slide-btn { color: #ff5722; }
 
-        .tg-content p {
-            margin: 0 0 12px 0;
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .tg-join-btn {
-            background: white;
-            color: #0088cc;
-            padding: 7px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
-            display: inline-block;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .tg-icon {
-            font-size: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
+        .slide-icon { font-size: 40px; background: rgba(255, 255, 255, 0.2); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
         .offers-section-header {
             display: flex;
@@ -205,11 +194,7 @@
             margin-bottom: 12px;
         }
 
-        .offers-section-header h2 {
-            margin: 0;
-            font-size: 22px;
-            color: #111;
-        }
+        .offers-section-header h2 { margin: 0; font-size: 22px; color: #111; }
 
         .offer-status-btn {
             background: #26a69a;
@@ -226,97 +211,17 @@
             box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
         }
 
-        .task-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 0 16px;
-            max-width: 600px;
-            margin: auto;
-        }
+        .task-grid { display: flex; flex-direction: column; gap: 12px; padding: 0 16px; max-width: 600px; margin: auto; }
+        .task-card { background: #ffffff; border-radius: 16px; padding: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04); cursor: pointer; transition: transform 0.2s; }
+        .task-card:hover { transform: translateY(-2px); }
+        .card-left { display: flex; align-items: center; gap: 14px; flex: 1; }
+        .task-logo { width: 50px; height: 50px; border-radius: 12px; object-fit: contain; background: #f8f9fa; }
+        .task-details h3 { margin: 0; font-size: 16px; color: #222; }
+        .reward { background: #e0f2f1; color: #00796b; padding: 6px 14px; border-radius: 12px; font-weight: bold; font-size: 14px; }
 
-        .task-card {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .task-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .card-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex: 1;
-        }
-
-        .task-logo {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            object-fit: contain;
-            background: #f8f9fa;
-        }
-
-        .task-details h3 {
-            margin: 0;
-            font-size: 16px;
-            color: #222;
-        }
-
-        .reward {
-            background: #e0f2f1;
-            color: #00796b;
-            padding: 6px 14px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        /* Bottom Floating Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 450px;
-            background: #00796b;
-            border-radius: 30px;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3);
-            z-index: 1000;
-        }
-
-        .nav-item {
-            color: rgba(255, 255, 255, 0.7);
-            text-align: center;
-            font-size: 11px;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            cursor: pointer;
-        }
-
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 6px 16px;
-            border-radius: 20px;
-            color: white;
-            font-weight: bold;
-        }
+        .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #00796b; border-radius: 30px; display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3); z-index: 1000; }
+        .nav-item { color: rgba(255, 255, 255, 0.7); text-align: center; font-size: 11px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.2); padding: 6px 16px; border-radius: 20px; color: white; font-weight: bold; }
     </style>
 </head>
 
@@ -333,7 +238,6 @@
             </div>
         </div>
 
-        <!-- Header Compact Icons & Wallet Box -->
         <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
             <div onclick="claimDailyBonus()" id="checkinBtn" title="Claim Daily Bonus" style="background: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 16px; transition: transform 0.2s;">
                 🎁
@@ -347,15 +251,38 @@
         </div>
     </header>
 
-    <!-- Telegram Channel Banner with your link -->
-    <a href="https://t.me/earn2347" target="_blank" class="telegram-banner">
-        <div class="tg-content">
-            <h3>Join Our Telegram Channel Get Rewards</h3>
-            <p>Join our Telegram channel and get exclusive Offers and rewards daily.</p>
-            <span class="tg-join-btn">Join Now</span>
+    <!-- Auto-Scrolling Banner Slider (Telegram, WhatsApp & Daily Check-in) -->
+    <div class="slider-container">
+        <div class="slider-track">
+            <!-- Slide 1: Telegram -->
+            <a href="https://t.me/earn2347" target="_blank" class="slide-card slide-1">
+                <div class="slide-content">
+                    <h3>Join Telegram Channel</h3>
+                    <p>Get exclusive offers and rewards daily.</p>
+                    <span class="slide-btn">Join Now</span>
+                </div>
+                <div class="slide-icon">📢</div>
+            </a>
+            <!-- Slide 2: WhatsApp (Updated Link) -->
+            <a href="https://whatsapp.com/channel/0029VbEFI46DTkJw50PBlc42" target="_blank" class="slide-card slide-2">
+                <div class="slide-content">
+                    <h3>Join WhatsApp Channel</h3>
+                    <p>Get instant updates & loot offers on WhatsApp.</p>
+                    <span class="slide-btn">Join WhatsApp</span>
+                </div>
+                <div class="slide-icon">💬</div>
+            </a>
+            <!-- Slide 3: Rewards -->
+            <div class="slide-card slide-3" onclick="claimDailyBonus()" style="cursor: pointer;">
+                <div class="slide-content">
+                    <h3>Daily Check-in Bonus</h3>
+                    <p>Claim free cash rewards up to ₹5 daily!</p>
+                    <span class="slide-btn">Claim Bonus</span>
+                </div>
+                <div class="slide-icon">🎁</div>
+            </div>
         </div>
-        <div class="tg-icon">📢</div>
-    </a>
+    </div>
 
     <div class="offers-section-header">
         <h2>Offers Wall</h2>
@@ -368,7 +295,6 @@
         <div id="taskList" class="task-grid"></div>
     </main>
 
-    <!-- Working Bottom Navigation Bar -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active"><span>🏠</span><span>Home</span></a>
         <a href="earn.html" class="nav-item"><span>🪙</span><span>Earn</span></a>
@@ -377,7 +303,7 @@
         <a href="profile.html" class="nav-item"><span>👤</span><span>Profile</span></a>
     </nav>
 
-    <!-- Withdrawal Popup Modal -->
+    <!-- Modals -->
     <div id="withdrawModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" onclick="closeWithdrawModal()">&times;</span>
@@ -395,7 +321,6 @@
         </div>
     </div>
 
-    <!-- Offer Status Modal -->
     <div id="statusModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" onclick="closeStatusModal()">&times;</span>
@@ -406,7 +331,6 @@
         </div>
     </div>
 
-    <!-- Notification Modal -->
     <div id="notificationModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" onclick="closeNotificationModal()">&times;</span>
@@ -549,36 +473,11 @@
                                 <span style="background: #fff3cd; color: #856404; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; margin-left: 6px;">Pending</span>
                             </div>
                         </div>
-
-                        <div id="tracking-${index}" style="display: none; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 13px;">
-                            <div style="margin-bottom: 8px;">🟢 <b>Offer Clicked</b><br><span style="color: #555; margin-left: 18px; font-size: 12px;">You Started the Offer</span></div>
-                            <div style="margin-bottom: 8px;">🟡 <b>Task "Register" Pending</b><br><span style="color: #555; margin-left: 18px; font-size: 12px;">Waiting for confirmation.</span></div>
-                            <div style="margin-bottom: 8px;">🟡 <b>Task "Verification" Pending</b><br><span style="color: #555; margin-left: 18px; font-size: 12px;">Coins will credit soon.</span></div>
-                        </div>
-
-                        <div style="text-align: center; margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px;">
-                            <button id="btn-${index}" onclick="toggleTracking(${index})" style="background: none; border: none; font-weight: bold; color: #00796b; cursor: pointer; font-size: 13px;">
-                                Show More Details
-                            </button>
-                        </div>
                     </div>`;
                 });
                 container.innerHTML = html;
             } catch (err) {
                 container.innerHTML = '<p style="text-align:center; color:red;">Error loading offer status.</p>';
-            }
-        }
-
-        function toggleTracking(index) {
-            const details = document.getElementById(`tracking-${index}`);
-            const btn = document.getElementById(`btn-${index}`);
-
-            if (details.style.display === 'none') {
-                details.style.display = 'block';
-                btn.innerText = 'Hide Details';
-            } else {
-                details.style.display = 'none';
-                btn.innerText = 'Show More Details';
             }
         }
 
@@ -618,7 +517,6 @@
                         window.location.href = `task-details.html?title=${encodeURIComponent(task.title)}&desc=${encodeURIComponent(task.description)}&reward=${task.rewardAmount}&logo=${encodeURIComponent(task.logoUrl)}&link=${encodeURIComponent(task.referLink)}`;
                     };
 
-                    // Description hata diya gaya hai taaki home page clean rahe
                     card.innerHTML = `
                         <div class="card-left">
                             <img src="${task.logoUrl}" alt="Logo" class="task-logo" onerror="this.src='https://via.placeholder.com/50'">

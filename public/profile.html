@@ -13,154 +13,38 @@
             padding-bottom: 100px;
         }
 
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-        }
-        .profile-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 22px;
-            font-weight: bold;
-            color: #111;
-        }
-        .back-btn {
-            background: white;
-            border: none;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .profile-title { display: flex; align-items: center; gap: 15px; font-size: 22px; font-weight: bold; color: #111; }
+        .back-btn { background: white; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .top-wallet-box { display: flex; align-items: center; background: white; padding: 6px 14px; border-radius: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-weight: bold; font-size: 15px; gap: 6px; }
 
-        .top-wallet-box {
-            display: flex;
-            align-items: center;
-            background: white;
-            padding: 6px 14px;
-            border-radius: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            font-weight: bold;
-            font-size: 15px;
-            gap: 6px;
-        }
-
-        /* Profile Card */
-        .profile-card {
-            background: white;
-            width: 90%;
-            max-width: 450px;
-            margin: 10px auto 20px auto;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        .user-details-box {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px dashed #ddd;
-        }
-        .user-avatar-lg {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
+        .profile-card { background: white; width: 90%; max-width: 450px; margin: 10px auto 20px auto; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .user-details-box { display: flex; align-items: center; gap: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ddd; }
+        .user-avatar-lg { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
         .user-text h3 { margin: 0 0 4px 0; font-size: 18px; color: #222; }
         .user-text p { margin: 0; font-size: 12px; color: #777; word-break: break-all; }
 
-        .earnings-stats {
-            display: flex;
-            justify-content: space-around;
-            padding-top: 15px;
-            text-align: center;
-        }
+        .earnings-stats { display: flex; justify-content: space-around; padding-top: 15px; text-align: center; }
         .stat-box h4 { margin: 0; font-size: 20px; color: #00796b; }
         .stat-box p { margin: 4px 0 0 0; font-size: 12px; color: #666; font-weight: 600; }
 
-        /* Settings List */
-        .settings-section {
-            width: 90%;
-            max-width: 450px;
-            margin: auto;
-        }
+        .settings-section { width: 90%; max-width: 450px; margin: auto; }
         .settings-section h2 { font-size: 20px; color: #111; margin-bottom: 15px; }
         
-        .setting-item {
-            background: white;
-            border-radius: 16px;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            cursor: pointer;
-            text-decoration: none;
-            color: #222;
-            font-weight: 600;
-            font-size: 15px;
-        }
+        .setting-item { background: white; border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); cursor: pointer; text-decoration: none; color: #222; font-weight: 600; font-size: 15px; }
         .setting-left { display: flex; align-items: center; gap: 12px; }
         .setting-item span { color: #888; font-size: 18px; }
 
-        /* Password Change Card */
-        .password-card {
-            background: white;
-            width: 90%;
-            max-width: 450px;
-            margin: 15px auto;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
+        .password-card { background: white; width: 90%; max-width: 450px; margin: 15px auto; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .password-card h3 { margin-top: 0; font-size: 16px; color: #00796b; margin-bottom: 12px; }
         .form-group { margin-bottom: 12px; text-align: left; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; }
         .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
         .btn-update { width: 100%; background: #00796b; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 5px; box-shadow: 0 3px 10px rgba(0,121,107,0.3); }
 
-        /* Bottom Floating Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 450px;
-            background: #00796b;
-            border-radius: 30px;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3);
-            z-index: 1000;
-        }
-        .nav-item {
-            color: rgba(255,255,255,0.7);
-            text-align: center;
-            font-size: 11px;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            cursor: pointer;
-        }
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 6px 16px;
-            border-radius: 20px;
-            color: white;
-            font-weight: bold;
-        }
+        .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #00796b; border-radius: 30px; display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 5px 20px rgba(0, 121, 107, 0.3); z-index: 1000; }
+        .nav-item { color: rgba(255,255,255,0.7); text-align: center; font-size: 11px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.2); padding: 6px 16px; border-radius: 20px; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -175,7 +59,6 @@
         </div>
     </header>
 
-    <!-- Profile Main Card -->
     <div class="profile-card">
         <div class="user-details-box">
             <img src="banner.jpg" alt="Profile" class="user-avatar-lg" onerror="this.src='https://via.placeholder.com/60'">
@@ -197,7 +80,6 @@
         </div>
     </div>
 
-    <!-- Security / Password Change Card -->
     <div class="password-card">
         <h3>🔒 Security Settings</h3>
         <div class="form-group">
@@ -207,7 +89,6 @@
         <button class="btn-update" onclick="updatePassword()">Update Password</button>
     </div>
 
-    <!-- Settings List -->
     <div class="settings-section">
         <h2>Settings</h2>
 
@@ -216,8 +97,15 @@
             <span>➔</span>
         </div>
 
-        <a href="https://t.me/earning_app_247_bot" target="_blank" class="setting-item">
+        <!-- Telegram Channel Link -->
+        <a href="https://t.me/earn2347" target="_blank" class="setting-item">
             <div class="setting-left">📢 Join Telegram</div>
+            <span>➔</span>
+        </a>
+
+        <!-- WhatsApp Channel Link -->
+        <a href="https://whatsapp.com/channel/0029VbEFI46DTkJw50PBlc42" target="_blank" class="setting-item">
+            <div class="setting-left">💬 Join WhatsApp</div>
             <span>➔</span>
         </a>
 
@@ -232,7 +120,6 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span>🏠</span><span>Home</span></a>
         <a href="earn.html" class="nav-item"><span>🪙</span><span>Earn</span></a>
