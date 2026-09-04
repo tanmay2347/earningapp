@@ -79,50 +79,65 @@
             padding-bottom: 90px;
         }
 
+        /* Fixed Header to prevent overflow with long email */
         .app-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
+            padding: 12px 15px;
+            gap: 5px;
+            overflow: hidden;
         }
 
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
         }
 
         .user-avatar {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid white;
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            min-width: 0;
+            flex: 1;
         }
 
         .user-info h4 {
             margin: 0;
-            font-size: 13px;
+            font-size: 11px;
             color: #555;
         }
 
         .user-info h2 {
             margin: 0;
-            font-size: 18px;
+            font-size: 14px;
             color: #222;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Lamba email hone par ... dikhayega */
         }
 
         .top-wallet-box {
             display: flex;
             align-items: center;
             background: white;
-            padding: 6px 14px;
+            padding: 5px 10px;
             border-radius: 30px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             font-weight: bold;
-            font-size: 15px;
-            gap: 6px;
+            font-size: 13px;
+            gap: 4px;
             cursor: pointer;
+            white-space: nowrap;
         }
 
         /* Telegram Banner Styling */
@@ -324,12 +339,12 @@
             </div>
         </div>
 
-        <!-- Header Gift Box, Notification Bell & Wallet Box -->
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <div onclick="claimDailyBonus()" id="checkinBtn" title="Claim Daily Bonus" style="background: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 18px; transition: transform 0.2s;">
+        <!-- Compact Header Icons & Wallet Box -->
+        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            <div onclick="claimDailyBonus()" id="checkinBtn" title="Claim Daily Bonus" style="background: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 16px; transition: transform 0.2s;">
                 🎁
             </div>
-            <div onclick="openNotificationModal()" title="Notifications" style="background: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 18px;">
+            <div onclick="openNotificationModal()" title="Notifications" style="background: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; font-size: 16px;">
                 🔔
             </div>
             <div class="top-wallet-box" onclick="openWithdrawModal()">
@@ -413,7 +428,7 @@
         if (!userEmail && localStorage.getItem('isAdmin') !== 'true') {
             window.location.href = 'login.html';
         } else if (userEmail) {
-            document.getElementById('userNameDisplay').innerText = userEmail.split('@')[0];
+            document.getElementById('userNameDisplay').innerText = userEmail;
         }
 
         function showToast(message, type = 'success') {
