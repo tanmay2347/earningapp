@@ -1,13 +1,23 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "earningapp-bhp9.onrender",
-  "orientation": "any",
-  "scope": "/",
+  "name": "EarningApp",
   "short_name": "EarningApp",
-  "start_url": "/",
-  "theme_color": "#ffffff",
+  "start_url": "/?source=earning",
+  "id": "/?source=earning",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00796b",
   "description": "Complete tasks and earn money",
-  "id": "/?source=earning"
+  "lang": "en",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
