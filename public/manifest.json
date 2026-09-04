@@ -1,21 +1,18 @@
 {
-  "name": "EarningApp",
-  "short_name": "EarningApp",
-  "start_url": "/?source=earning",
-  "id": "/?source=earning",
+  "name": "Arena Earning",
+  "short_name": "ArenaEarning",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#00796b",
-  "description": "Complete tasks and earn money",
-  "lang": "en",
   "icons": [
     {
-      "src": "https://via.placeholder.com/192",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://via.placeholder.com/512",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

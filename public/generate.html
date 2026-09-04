@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Earning App Icon Generator</title>
+</head>
+<body style="background: #e0f2f1; font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h2>Generating your App Icons...</h2>
+    <p>Aapke icons kuch hi seconds me automatically download ho jayenge!</p>
+
+    <script>
+        function generateAndDownload(size, filename) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Liquid gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#00ffcc');
+            gradient.addColorStop(0.5, '#00796b');
+            gradient.addColorStop(1, '#26a69a');
+            ctx.fillStyle = gradient;
+            
+            // Draw rounded square background
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, size * 0.22);
+            ctx.fill();
+
+            // Draw text 'EA' (Earning App)
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${size * 0.4}px 'Segoe UI', Tahoma, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = size * 0.05;
+            ctx.fillText('EA', size / 2, size / 2);
+
+            // Trigger download
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        window.onload = () => {
+            setTimeout(() => { generateAndDownload(192, 'icon-192.png'); }, 500);
+            setTimeout(() => { generateAndDownload(512, 'icon-512.png'); }, 1200);
+        };
+    </script>
+</body>
+</html>
