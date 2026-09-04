@@ -26,8 +26,8 @@
         .top-card { display: flex; justify-content: space-between; align-items: center; }
         .top-logo { width: 60px; height: 60px; border-radius: 12px; object-fit: contain; background: #f8f9fa; }
         
-        .step-item { display: flex; align-items: center; gap: 12px; margin: 15px 0; font-size: 15px; color: #444; font-weight: 500; }
-        .step-dot { width: 12px; height: 12px; background: #26a69a; border-radius: 50%; }
+        .step-item { display: flex; align-items: flex-start; gap: 12px; margin: 15px 0; font-size: 15px; color: #444; font-weight: 500; line-height: 1.4; }
+        .step-dot { width: 10px; height: 10px; background: #26a69a; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
         
         .upload-card { display: none; text-align: center; border: 2px dashed #00796b; background: #f4fdfc; }
         
@@ -57,18 +57,18 @@
     <div class="top-card">
         <div>
             <h2 id="taskTitle" style="margin:0 0 5px 0; font-size:20px;">Loading...</h2>
-            <p id="taskSubtitle" style="margin:0; color:#666; font-size:13px;"></p>
             <div style="margin-top: 10px; background: #e0f2f1; color: #00796b; padding: 6px 12px; border-radius: 10px; display: inline-block; font-weight: bold;" id="taskReward">🪙 ₹0</div>
         </div>
         <img id="taskLogo" src="" alt="Logo" class="top-logo">
     </div>
 
+    <!-- Point-wise Instructions Card -->
     <div class="instruction-card">
-        <h3 style="margin-top:0;">Follow the instructions below:</h3>
+        <h3 style="margin-top:0; color:#222; font-size:17px;">📋 Follow the instructions below:</h3>
         <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
-        <div class="step-item"><div class="step-dot"></div><span>Click Install & Register using app</span></div>
-        <div class="step-item"><div class="step-dot"></div><span>Complete required steps / KYC</span></div>
-        <div class="step-item"><div class="step-dot"></div><span>Take screenshot & upload below</span></div>
+        <div id="taskInstructionsList">
+            <div class="step-item"><div class="step-dot"></div><span>Loading instructions...</span></div>
+        </div>
     </div>
 
     <!-- Screenshot Upload Section -->
@@ -99,15 +99,37 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const title = urlParams.get('title');
-        const desc = urlParams.get('desc');
+        const desc = urlParams.get('desc'); // Admin dwara dala gaya point-wise text
         const reward = urlParams.get('reward');
         const logo = urlParams.get('logo');
         const link = urlParams.get('link');
 
         document.getElementById('taskTitle').innerText = title || 'Task Offer';
-        document.getElementById('taskSubtitle').innerText = desc || 'Complete this task to earn reward';
         document.getElementById('taskReward').innerText = '🪙 ₹' + (reward || 0);
         document.getElementById('taskLogo').src = logo || 'https://via.placeholder.com/60';
+
+        // Admin ke description ko line-by-line tod kar point-wise display karna
+        const instructionContainer = document.getElementById('taskInstructionsList');
+        if (desc && desc.trim() !== '') {
+            instructionContainer.innerHTML = '';
+            const points = desc.split('\n');
+            points.forEach(point => {
+                if (point.trim() !== '') {
+                    instructionContainer.innerHTML += `
+                        <div class="step-item">
+                            <div class="step-dot"></div>
+                            <span>${point}</span>
+                        </div>
+                    `;
+                }
+            });
+        } else {
+            instructionContainer.innerHTML = `
+                <div class="step-item"><div class="step-dot"></div><span>Complete the task as per instructions</span></div>
+                <div class="step-item"><div class="step-dot"></div><span>Take screenshot proof</span></div>
+                <div class="step-item"><div class="step-dot"></div><span>Upload proof and submit</span></div>
+            `;
+        }
 
         function updateFileName(input) {
             const fileNameDisplay = document.getElementById('fileNameDisplay');

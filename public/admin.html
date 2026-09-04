@@ -22,7 +22,7 @@
         .form-group.full { grid-column: span 2; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #495057; font-size: 14px; }
         .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        .form-group textarea { height: 80px; resize: vertical; }
+        .form-group textarea { height: 100px; resize: vertical; }
         .btn-primary { background: #28a745; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
         .task-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .task-table th, .task-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #dee2e6; font-size: 14px; }
@@ -64,7 +64,10 @@
                     <div class="form-group"><label>Reward Amount (₹)</label><input type="number" id="rewardAmount" placeholder="e.g., 300" required></div>
                     <div class="form-group full"><label>Logo Image URL</label><input type="text" id="logoUrl" placeholder="https://..." required></div>
                     <div class="form-group full"><label>Referral Link</label><input type="text" id="referLink" placeholder="https://..." required></div>
-                    <div class="form-group full"><label>Description</label><textarea id="description" placeholder="Instructions..." required></textarea></div>
+                    <div class="form-group full">
+                        <label>Description (Point-wise likhein, har line ek naya point banegi)</label>
+                        <textarea id="description" placeholder="- Install app & register&#10;- Complete KYC verification&#10;- Keep app installed for 2 days" required></textarea>
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary" id="submitBtn">Publish Offer</button>
                 <button type="button" id="cancelEditBtn" style="display:none; background:#6c757d; color:white; border:none; padding:10px; width:100%; margin-top:5px; border-radius:4px; cursor:pointer;" onclick="resetForm()">Cancel Edit</button>
@@ -140,7 +143,6 @@
                     });
                 }
 
-                // Load Task Submissions with Proof Screenshot Link
                 let subs = await (await fetch('/api/admin/submissions')).json();
                 let subTbody = document.getElementById('submissionList');
                 subTbody.innerHTML = '';
@@ -149,9 +151,7 @@
                 } else {
                     subs.forEach(sub => {
                         let proofLink = sub.proofImage ? `<a href="${sub.proofImage}" target="_blank" style="color:#007bff; font-weight:bold; text-decoration:underline;">View Proof</a>` : '<span style="color:#777;">No Image</span>';
-                        
                         let statusColor = sub.status === 'Approved' ? 'green' : (sub.status === 'Rejected' ? 'red' : 'orange');
-                        
                         let actionCell = sub.status === 'Pending' 
                             ? `<button class="approve-btn" onclick="paySub('${sub._id}')">Approve & Pay</button>
                                <button class="action-btn" onclick="rejectSub('${sub._id}')">Reject</button>` 
@@ -168,7 +168,6 @@
                     });
                 }
 
-                // Load Withdrawal Requests
                 let wdRes = await fetch('/api/admin/withdrawals');
                 let wds = await wdRes.json();
                 let wdTbody = document.getElementById('withdrawalList');
