@@ -522,12 +522,8 @@ app.post('/api/user/daily-checkin', async (req, res) => {
             });
         }
 
-        let reward = 1;
-        const rand = Math.random();
-        if (rand > 0.85) reward = 5;
-        else if (rand > 0.65) reward = 4;
-        else if (rand > 0.40) reward = 3;
-        else if (rand > 0.20) reward = 2;
+        // Sirf 1 ya 2 Rs randomly milenge
+        let reward = Math.random() < 0.5 ? 1 : 2;
 
         user.wallet += reward;
         user.lastCheckInDate = todayStr;

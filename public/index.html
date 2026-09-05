@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earning App - Home</title>
-    <!-- Web App Manifest Link Added -->
+    <title>Arena Earning - Home</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -253,11 +252,9 @@
         </div>
     </header>
 
-    <!-- Auto-Scrolling Banner Slider (Telegram, WhatsApp & Daily Check-in) -->
     <div class="slider-container">
         <div class="slider-track">
-            <!-- Slide 1: Telegram -->
-            <a href="https://t.me/earn2347" target="_blank" class="slide-card slide-1">
+            <a href="https://t.me/earn2347" target="_blank" rel="noopener noreferrer" class="slide-card slide-1">
                 <div class="slide-content">
                     <h3>Join Telegram Channel</h3>
                     <p>Get exclusive offers and rewards daily.</p>
@@ -265,8 +262,7 @@
                 </div>
                 <div class="slide-icon">📢</div>
             </a>
-            <!-- Slide 2: WhatsApp -->
-            <a href="https://whatsapp.com/channel/0029VbEFI46DTkJw50PBlc42" target="_blank" class="slide-card slide-2">
+            <a href="https://whatsapp.com/channel/0029VbEFI46DTkJw50PBlc42" target="_blank" rel="noopener noreferrer" class="slide-card slide-2">
                 <div class="slide-content">
                     <h3>Join WhatsApp Channel</h3>
                     <p>Get instant updates & loot offers on WhatsApp.</p>
@@ -274,7 +270,6 @@
                 </div>
                 <div class="slide-icon">💬</div>
             </a>
-            <!-- Slide 3: Rewards -->
             <div class="slide-card slide-3" onclick="claimDailyBonus()" style="cursor: pointer;">
                 <div class="slide-content">
                     <h3>Daily Check-in Bonus</h3>
@@ -305,7 +300,6 @@
         <a href="profile.html" class="nav-item"><span>👤</span><span>Profile</span></a>
     </nav>
 
-    <!-- Modals -->
     <div id="withdrawModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" onclick="closeWithdrawModal()">&times;</span>
