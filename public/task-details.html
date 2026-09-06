@@ -16,6 +16,30 @@
         .back-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .back-btn { background: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
+        /* Professional Toast Notification */
+        #toastNotification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+        #toastNotification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #toastNotification.success { background: #28a745; }
+        #toastNotification.error { background: #dc3545; }
+        
         .top-card, .instruction-card, .upload-card {
             background: white;
             border-radius: 20px;
@@ -49,9 +73,12 @@
 </head>
 <body>
 
+    <!-- Toast Notification Container -->
+    <div id="toastNotification"></div>
+
     <div class="back-header">
         <button class="back-btn" onclick="history.back()">←</button>
-        <div style="background: white; padding: 6px 14px; border-radius: 20px; font-weight: bold;">🪙 Wallet</div>
+        <div style="background: white; padding: 6px 14px; border-radius: 20px; font-weight: bold;" onclick="window.location.href='wallet.html'" style="cursor: pointer;">🪙 Wallet</div>
     </div>
 
     <div class="top-card">
@@ -97,9 +124,18 @@
             window.location.href = 'login.html';
         }
 
+        // Professional Toast Function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            toast.innerText = message;
+            toast.className = '';
+            toast.classList.add('show', type);
+            setTimeout(() => { toast.className = ''; }, 3000);
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const title = urlParams.get('title');
-        const desc = urlParams.get('desc'); // Admin dwara dala gaya point-wise text
+        const desc = urlParams.get('desc');
         const reward = urlParams.get('reward');
         const logo = urlParams.get('logo');
         const link = urlParams.get('link');
@@ -108,7 +144,6 @@
         document.getElementById('taskReward').innerText = '🪙 ₹' + (reward || 0);
         document.getElementById('taskLogo').src = logo || 'https://via.placeholder.com/60';
 
-        // Admin ke description ko line-by-line tod kar point-wise display karna
         const instructionContainer = document.getElementById('taskInstructionsList');
         if (desc && desc.trim() !== '') {
             instructionContainer.innerHTML = '';
@@ -146,20 +181,20 @@
 
         function openTaskLink() {
             if (!link) {
-                alert("Invalid tracking link!");
+                showToast("Invalid tracking link!", "error");
                 return;
             }
             window.open(link, '_blank');
 
             document.getElementById('actionBar').style.display = 'none';
             document.getElementById('uploadSection').style.display = 'block';
-            alert("Now complete the task, take a screenshot, and upload it below!");
+            showToast("Now complete the task, take a screenshot, and upload it below!", "success");
         }
 
         async function submitTaskProof() {
             const fileInput = document.getElementById('proofImage');
             if (fileInput.files.length === 0) {
-                alert("Please select a screenshot first!");
+                showToast("Please select a screenshot first!", "error");
                 return;
             }
 
@@ -214,16 +249,16 @@
                             })
                         });
                         const data = await res.json();
-                        alert(data.message || "Submitted successfully!");
+                        showToast(data.message || "Submitted successfully!", data.success ? 'success' : 'error');
                         if(data.success) {
-                            window.location.href = 'index.html';
+                            setTimeout(() => { window.location.href = 'index.html'; }, 1500);
                         } else {
                             submitBtn.innerText = "Submit For Verification 🚀";
                             submitBtn.disabled = false;
                         }
                     } catch (err) {
                         console.error(err);
-                        alert("Error submitting task proof! Check your mobile internet connection.");
+                        showToast("Error submitting task proof! Check your connection.", "error");
                         submitBtn.innerText = "Submit For Verification 🚀";
                         submitBtn.disabled = false;
                     }
@@ -231,7 +266,7 @@
             };
 
             reader.onerror = function() {
-                alert("Failed to read image file!");
+                showToast("Failed to read image file!", "error");
                 submitBtn.innerText = "Submit For Verification 🚀";
                 submitBtn.disabled = false;
             };

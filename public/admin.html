@@ -30,9 +30,73 @@
         .action-btn { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .edit-btn { background: #ffc107; color: black; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px; }
         .approve-btn { background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px; }
+
+        /* Professional Toast Notification */
+        #toastNotification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+        #toastNotification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #toastNotification.success { background: #28a745; }
+        #toastNotification.error { background: #dc3545; }
+
+        /* Custom Modal for Confirmation */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .modal-box h3 { margin-top: 0; color: #333; font-size: 18px; }
+        .modal-box p { color: #666; font-size: 14px; margin-bottom: 20px; }
+        .modal-actions { display: flex; gap: 10px; justify-content: center; }
+        .modal-actions button { padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; }
+        .btn-cancel { background: #6c757d; color: white; }
+        .btn-confirm { background: #dc3545; color: white; }
     </style>
 </head>
 <body>
+
+    <!-- Toast Notification Container -->
+    <div id="toastNotification"></div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="confirmTitle">Confirm Action</h3>
+            <p id="confirmMessage">Are you sure you want to proceed?</p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeConfirmModal(false)">Cancel</button>
+                <button class="btn-confirm" id="modalConfirmBtn" onclick="closeConfirmModal(true)">Yes, Proceed</button>
+            </div>
+        </div>
+    </div>
 
     <header class="admin-header">
         <h2>🛡️ EarningApp - Professional Admin Panel</h2>
@@ -72,7 +136,6 @@
                 <button type="submit" class="btn-primary" id="submitBtn">Publish Offer</button>
                 <button type="button" id="cancelEditBtn" style="display:none; background:#6c757d; color:white; border:none; padding:10px; width:100%; margin-top:5px; border-radius:4px; cursor:pointer;" onclick="resetForm()">Cancel Edit</button>
             </form>
-            <p id="msg" style="color: green; margin-top: 10px; font-weight: bold; text-align: center;"></p>
         </div>
 
         <!-- Manage Offers Table -->
@@ -110,6 +173,33 @@
         const userEmail = localStorage.getItem('userEmail');
         if (!userEmail || userEmail.toLowerCase() !== 'admin@earningapp.com') {
             window.location.href = 'login.html';
+        }
+
+        // Professional Toast Function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            toast.innerText = message;
+            toast.className = '';
+            toast.classList.add('show', type);
+            setTimeout(() => { toast.className = ''; }, 3000);
+        }
+
+        // Custom Confirmation Dialog Function
+        let confirmCallback = null;
+        function showConfirm(title, message, callback, btnColor = '#dc3545') {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = message;
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            confirmBtn.style.background = btnColor;
+            confirmCallback = callback;
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+        function closeConfirmModal(result) {
+            document.getElementById('confirmModal').style.display = 'none';
+            if (confirmCallback) {
+                confirmCallback(result);
+                confirmCallback = null;
+            }
         }
 
         function adminLogout() { 
@@ -210,48 +300,68 @@
             document.getElementById('cancelEditBtn').style.display = 'none';
         }
 
-        async function deleteTask(id) {
-            if (confirm("Are you sure you want to delete this offer?")) {
-                try {
-                    let res = await fetch('/api/admin/tasks/delete/' + id, { method: 'DELETE' });
-                    let data = await res.json();
-                    if(data.success) {
-                        alert("Offer deleted successfully!");
-                        loadAdminData();
-                    } else {
-                        alert("Failed to delete task.");
+        function deleteTask(id) {
+            showConfirm("Delete Offer", "Are you sure you want to delete this offer?", async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        let res = await fetch('/api/admin/tasks/delete/' + id, { method: 'DELETE' });
+                        let data = await res.json();
+                        if(data.success) {
+                            showToast("Offer deleted successfully!", "success");
+                            loadAdminData();
+                        } else {
+                            showToast("Failed to delete task.", "error");
+                        }
+                    } catch(e) {
+                        showToast("Error connecting to server.", "error");
                     }
-                } catch(e) {
-                    alert("Error connecting to server.");
                 }
-            }
+            });
         }
 
-        async function paySub(id) {
-            if (confirm("Send payment from Admin Wallet to Customer Wallet?")) {
-                let res = await fetch('/api/admin/approve/' + id, { method: 'POST' });
-                let data = await res.json();
-                alert(data.message);
-                loadAdminData();
-            }
+        function paySub(id) {
+            showConfirm("Approve & Pay", "Send payment from Admin Wallet to Customer Wallet?", async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        let res = await fetch('/api/admin/approve/' + id, { method: 'POST' });
+                        let data = await res.json();
+                        showToast(data.message, data.success ? 'success' : 'error');
+                        loadAdminData();
+                    } catch (e) {
+                        showToast("Error processing payment.", "error");
+                    }
+                }
+            }, '#28a745');
         }
 
-        async function rejectSub(id) {
-            if (confirm("Are you sure you want to reject this task?")) {
-                let res = await fetch('/api/admin/reject/' + id, { method: 'POST' });
-                let data = await res.json();
-                alert(data.message);
-                loadAdminData();
-            }
+        function rejectSub(id) {
+            showConfirm("Reject Task", "Are you sure you want to reject this task submission?", async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        let res = await fetch('/api/admin/reject/' + id, { method: 'POST' });
+                        let data = await res.json();
+                        showToast(data.message, data.success ? 'success' : 'error');
+                        loadAdminData();
+                    } catch (e) {
+                        showToast("Error rejecting task.", "error");
+                    }
+                }
+            });
         }
 
-        async function payWithdraw(id) {
-            if (confirm("Mark this withdrawal request as processed/paid?")) {
-                let res = await fetch('/api/admin/approve-withdraw/' + id, { method: 'POST' });
-                let data = await res.json();
-                alert(data.message);
-                loadAdminData();
-            }
+        function payWithdraw(id) {
+            showConfirm("Approve Payout", "Mark this withdrawal request as processed/paid?", async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        let res = await fetch('/api/admin/approve-withdraw/' + id, { method: 'POST' });
+                        let data = await res.json();
+                        showToast(data.message, data.success ? 'success' : 'error');
+                        loadAdminData();
+                    } catch (e) {
+                        showToast("Error updating withdrawal.", "error");
+                    }
+                }
+            }, '#28a745');
         }
 
         document.getElementById('taskForm').addEventListener('submit', async (e) => {
@@ -272,11 +382,13 @@
                 body: JSON.stringify(payload)
             });
 
-            if ((await res.json()).success) {
-                document.getElementById('msg').innerText = id ? "Offer updated successfully!" : "Offer published successfully!";
+            let data = await res.json();
+            if (data.success) {
+                showToast(id ? "Offer updated successfully!" : "Offer published successfully!", "success");
                 resetForm();
                 loadAdminData();
-                setTimeout(() => { document.getElementById('msg').innerText = ''; }, 3000);
+            } else {
+                showToast("Failed to save offer.", "error");
             }
         });
 

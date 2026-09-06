@@ -13,6 +13,30 @@
             padding-bottom: 100px;
         }
 
+        /* Professional Toast Notification */
+        #toastNotification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+        #toastNotification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #toastNotification.success { background: #28a745; }
+        #toastNotification.error { background: #dc3545; }
+
         .app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
         .profile-title { display: flex; align-items: center; gap: 15px; font-size: 22px; font-weight: bold; color: #111; }
         .back-btn { background: white; border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -48,6 +72,9 @@
     </style>
 </head>
 <body>
+
+    <!-- Toast Notification Container -->
+    <div id="toastNotification"></div>
 
     <header class="app-header">
         <div class="profile-title">
@@ -92,19 +119,19 @@
     <div class="settings-section">
         <h2>Settings</h2>
 
-        <div class="setting-item" onclick="alert('Thank you for rating us!')">
+        <div class="setting-item" onclick="showToast('Thank you for rating us!', 'success')">
             <div class="setting-left">⭐ Rate Us</div>
             <span>➔</span>
         </div>
 
         <!-- Telegram Channel Link -->
-        <a href="https://t.me/earn2347" target="_blank" class="setting-item">
+        <a href="https://t.me/earn2347" target="_blank" rel="noopener noreferrer" class="setting-item">
             <div class="setting-left">📢 Join Telegram</div>
             <span>➔</span>
         </a>
 
         <!-- WhatsApp Channel Link -->
-        <a href="https://whatsapp.com/channel/0029VbEFI46DTkJw50PBlc42" target="_blank" class="setting-item">
+        <a href="https://whatsapp.com/channel/0029VbEFI46DTkJw50PBlc42" target="_blank" rel="noopener noreferrer" class="setting-item">
             <div class="setting-left">💬 Join WhatsApp</div>
             <span>➔</span>
         </a>
@@ -134,6 +161,15 @@
             window.location.href = 'login.html';
         }
 
+        // Professional Toast Function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            toast.innerText = message;
+            toast.className = '';
+            toast.classList.add('show', type);
+            setTimeout(() => { toast.className = ''; }, 3000);
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             if (userEmail) {
                 document.getElementById('profileEmail').innerText = userEmail;
@@ -156,7 +192,7 @@
         async function updatePassword() {
             const newPassword = document.getElementById('newPassword').value.trim();
             if (!newPassword || newPassword.length < 4) {
-                alert("Password must be at least 4 characters long!");
+                showToast("Password must be at least 4 characters long!", "error");
                 return;
             }
 
@@ -167,12 +203,12 @@
                     body: JSON.stringify({ email: userEmail, password: newPassword })
                 });
                 const data = await res.json();
-                alert(data.message);
+                showToast(data.message, data.success ? 'success' : 'error');
                 if (data.success) {
                     document.getElementById('newPassword').value = '';
                 }
             } catch (err) {
-                alert("Error updating password!");
+                showToast("Error updating password!", "error");
             }
         }
 
